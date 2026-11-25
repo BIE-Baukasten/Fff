@@ -2,7 +2,7 @@
 
 import { World, DAY, PARAMS } from './world.js';
 import { Renderer, colorOf, cladeColor } from './render.js';
-import { drawPopulation, drawTree, drawBrain, treeRows, TREE_ROW } from './charts.js';
+import { drawPopulation, drawTree, drawBrain, TREE_ROW } from './charts.js';
 import { seedFromText } from './rng.js';
 
 const $ = (id) => document.getElementById(id);
