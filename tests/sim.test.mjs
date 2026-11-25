@@ -162,3 +162,20 @@ test('Uhr: Start um 8 Uhr an Tag 1, Tageswechsel um Mitternacht', () => {
   const noon = DAY * (4 / 24);
   assert.ok(w.dayFactor(noon) > 0.999);
 });
+
+test('Eingriffe wirken und stehen in der Chronik', () => {
+  const w = new World(8);
+  for (let i = 0; i < 300; i++) w.step();
+  w.intervene('bloom');
+  assert.ok(w.algae.every((a) => a >= 0.7));
+  w.intervene('murk');
+  assert.equal(w.murk(), 1);
+  const before = w.creatures.map((c) => [c.x, c.y]);
+  w.intervene('current');
+  assert.ok(w.creatures.some((c, i) => c.x !== before[i][0]));
+  for (const c of w.creatures) assert.ok(c.x >= 0 && c.x < 1600 && c.y >= 0 && c.y < 1000);
+  for (let i = 0; i < DAY + 5; i++) w.step();
+  assert.equal(w.murk(), 0);
+  assert.equal(w.events.filter((e) => String(e.parts[0]).startsWith('Eingriff')).length, 3);
+  assert.throws(() => w.intervene('meteor'));
+});

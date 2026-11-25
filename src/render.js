@@ -135,6 +135,12 @@ export class Renderer {
     }
     ctx.globalCompositeOperation = 'source-over';
 
+    // Trübes Wasser: ein schlammiger Schleier.
+    if (w.murk()) {
+      ctx.fillStyle = 'rgba(46, 38, 20, 0.42)';
+      ctx.fillRect(0, 0, this.cssW, this.cssH);
+    }
+
     // Nacht legt sich übers Becken.
     if (night > 0) {
       ctx.fillStyle = `rgba(2, 6, 22, ${night * 0.55})`;

@@ -493,6 +493,13 @@ function wireControls() {
     toast(`Welt aus Saat ${seed} gesät.`);
   });
   for (const b of document.querySelectorAll('[data-tool]')) b.addEventListener('click', () => setTool(b.dataset.tool));
+  $('interventions').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-intervene]');
+    if (!b) return;
+    state.world.intervene(b.dataset.intervene);
+    toast({ bloom: 'Algenblüte ausgelöst.', murk: 'Das Wasser trübt sich für einen Tag.', current: 'Die Strömung mischt alle Tiere durch.' }[b.dataset.intervene]);
+    refreshChronicle();
+  });
   $('zoomIn').addEventListener('click', () => state.renderer.zoomAt(state.renderer.cssW / 2, state.renderer.cssH / 2, 1.5));
   $('zoomOut').addEventListener('click', () => state.renderer.zoomAt(state.renderer.cssW / 2, state.renderer.cssH / 2, 1 / 1.5));
 

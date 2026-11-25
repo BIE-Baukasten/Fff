@@ -32,11 +32,16 @@ das Bündel neu. Abhängigkeiten gibt es keine, Node 18 oder neuer reicht.
 | Art ansehen | Artnamen in Liste, Chronik oder Stammbaum antippen |
 | Verschieben, Zoomen | ziehen, Mausrad oder `+` / `−` |
 | Algen streuen | Werkzeug „Füttern“ oder mit gedrückter Umschalttaste ziehen |
+| Eingreifen | Algenblüte, Trübung (ein Tag fast ohne Licht) oder Strömung (mischt alle Tiere) |
 | Pause, Tempo | Leertaste, Tasten `1` bis `4` |
 | Eine bestimmte Welt | Zahl oder Wort ins Feld „Saat“, dann „Säen“ |
 
 Die Saat steht in der Adresse (`#saat-12345`). Gleiche Saat, gleiche
-Geschichte: die Simulation ist vollständig deterministisch.
+Geschichte, und zwar in jedem Browser: Die Simulation rechnet mit eigenen
+Fassungen von `exp`, `log`, `sin`, `cos`, `tanh` und `atan2` (`src/detmath.js`),
+weil die eingebauten in jeder JavaScript-Engine im letzten Bit anders runden
+dürfen. Ein chaotisches Ökosystem macht aus so einem Bit nach wenigen Tagen
+eine andere Welt. Füttern und Eingriffe verändern die Geschichte natürlich.
 
 ## Wie das Becken funktioniert
 
@@ -86,6 +91,7 @@ immer sofort verhungert.
 ```
 index.html          Seite und Gestaltung
 src/rng.js          deterministischer Zufall (mulberry32)
+src/detmath.js      exp, log, sin, cos, tanh, atan2 bitgenau in jeder Engine
 src/genome.js       Erbgut, Mutation, genetischer Abstand
 src/brain.js        das kleine neuronale Netz
 src/names.js        Gattungen und Epitheta

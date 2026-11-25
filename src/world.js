@@ -81,6 +81,7 @@ export class World {
     this.births = 0;
     this.deaths = { hunger: 0, age: 0, eaten: 0 };
     this.lastImmigration = -Infinity;
+    this.murkUntil = -1;
     this.buckets = Array.from({ length: HCOLS * HROWS }, () => []);
     this._newborn = [];
 
@@ -170,8 +171,13 @@ export class World {
     return this.algae[this.cellIndex(x, y)];
   }
 
+  // Trübes Wasser schluckt das meiste Licht.
+  murk() {
+    return this.t < this.murkUntil ? 1 : 0;
+  }
+
   growAlgae(day) {
-    const g = PARAMS.algaeGrowth * day;
+    const g = PARAMS.algaeGrowth * day * (this.murk() ? 0.12 : 1);
     const a = this.algae;
     const L = this.light;
     for (let i = 0; i < a.length; i++) {
@@ -668,6 +674,26 @@ export class World {
   log(...parts) {
     this.events.push({ t: this.t, parts: parts.filter((p) => p !== '') });
     if (this.events.length > 400) this.events.splice(0, this.events.length - 400);
+  }
+
+  // ---------- Eingriffe von außen ----------
+
+  intervene(kind) {
+    if (kind === 'bloom') {
+      for (let i = 0; i < this.algae.length; i++) this.algae[i] = Math.max(this.algae[i], 0.7 + 0.6 * this.light[i]);
+      this.log('Eingriff: Eine Algenblüte überzieht das ganze Becken.');
+    } else if (kind === 'murk') {
+      this.murkUntil = this.t + DAY;
+      this.log('Eingriff: Trübes Wasser schluckt einen Tag lang fast alles Licht.');
+    } else if (kind === 'current') {
+      for (const c of this.creatures) {
+        c.x = wrapCoord(((c.x + this.rng.gauss() * 320) % WORLD_W + WORLD_W) % WORLD_W, WORLD_W);
+        c.y = wrapCoord(((c.y + this.rng.gauss() * 220) % WORLD_H + WORLD_H) % WORLD_H, WORLD_H);
+      }
+      this.log('Eingriff: Eine Strömung wirbelt alle Tiere durcheinander.');
+    } else {
+      throw new Error(`Unbekannter Eingriff: ${kind}`);
+    }
   }
 
   // ---------- Auskunft für die Oberfläche ----------

@@ -342,6 +342,16 @@ button { cursor: pointer; }
     </section>
 
     <section class="panel">
+      <h2>Eingriffe</h2>
+      <div class="actions" id="interventions">
+        <button class="btn" type="button" data-intervene="bloom">Algenblüte</button>
+        <button class="btn" type="button" data-intervene="murk">Trübung</button>
+        <button class="btn" type="button" data-intervene="current">Strömung</button>
+      </div>
+      <p class="note">Wie reagieren die Arten auf Überfluss, auf einen Tag ohne Licht, auf plötzliche Nachbarn? Jeder Eingriff landet in der Chronik.</p>
+    </section>
+
+    <section class="panel">
       <h2>Chronik</h2>
       <ol class="chronicle" id="chronicle"></ol>
     </section>
@@ -885,6 +895,7 @@ class World {
     this.births = 0;
     this.deaths = { hunger: 0, age: 0, eaten: 0 };
     this.lastImmigration = -Infinity;
+    this.murkUntil = -1;
     this.buckets = Array.from({ length: HCOLS * HROWS }, () => []);
     this._newborn = [];
 
@@ -974,8 +985,13 @@ class World {
     return this.algae[this.cellIndex(x, y)];
   }
 
+  // Trübes Wasser schluckt das meiste Licht.
+  murk() {
+    return this.t < this.murkUntil ? 1 : 0;
+  }
+
   growAlgae(day) {
-    const g = PARAMS.algaeGrowth * day;
+    const g = PARAMS.algaeGrowth * day * (this.murk() ? 0.12 : 1);
     const a = this.algae;
     const L = this.light;
     for (let i = 0; i < a.length; i++) {
@@ -1474,6 +1490,26 @@ class World {
     if (this.events.length > 400) this.events.splice(0, this.events.length - 400);
   }
 
+  // ---------- Eingriffe von außen ----------
+
+  intervene(kind) {
+    if (kind === 'bloom') {
+      for (let i = 0; i < this.algae.length; i++) this.algae[i] = Math.max(this.algae[i], 0.7 + 0.6 * this.light[i]);
+      this.log('Eingriff: Eine Algenblüte überzieht das ganze Becken.');
+    } else if (kind === 'murk') {
+      this.murkUntil = this.t + DAY;
+      this.log('Eingriff: Trübes Wasser schluckt einen Tag lang fast alles Licht.');
+    } else if (kind === 'current') {
+      for (const c of this.creatures) {
+        c.x = wrapCoord(((c.x + this.rng.gauss() * 320) % WORLD_W + WORLD_W) % WORLD_W, WORLD_W);
+        c.y = wrapCoord(((c.y + this.rng.gauss() * 220) % WORLD_H + WORLD_H) % WORLD_H, WORLD_H);
+      }
+      this.log('Eingriff: Eine Strömung wirbelt alle Tiere durcheinander.');
+    } else {
+      throw new Error(`Unbekannter Eingriff: ${kind}`);
+    }
+  }
+
   // ---------- Auskunft für die Oberfläche ----------
 
   creatureNear(x, y, radius) {
@@ -1685,6 +1721,12 @@ class Renderer {
       ctx.fillRect(gx - r, gy - r, r * 2, r * 2);
     }
     ctx.globalCompositeOperation = 'source-over';
+
+    // Trübes Wasser: ein schlammiger Schleier.
+    if (w.murk()) {
+      ctx.fillStyle = 'rgba(46, 38, 20, 0.42)';
+      ctx.fillRect(0, 0, this.cssW, this.cssH);
+    }
 
     // Nacht legt sich übers Becken.
     if (night > 0) {
@@ -2613,6 +2655,13 @@ function wireControls() {
     toast(`Welt aus Saat ${seed} gesät.`);
   });
   for (const b of document.querySelectorAll('[data-tool]')) b.addEventListener('click', () => setTool(b.dataset.tool));
+  $('interventions').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-intervene]');
+    if (!b) return;
+    state.world.intervene(b.dataset.intervene);
+    toast({ bloom: 'Algenblüte ausgelöst.', murk: 'Das Wasser trübt sich für einen Tag.', current: 'Die Strömung mischt alle Tiere durch.' }[b.dataset.intervene]);
+    refreshChronicle();
+  });
   $('zoomIn').addEventListener('click', () => state.renderer.zoomAt(state.renderer.cssW / 2, state.renderer.cssH / 2, 1.5));
   $('zoomOut').addEventListener('click', () => state.renderer.zoomAt(state.renderer.cssW / 2, state.renderer.cssH / 2, 1 / 1.5));
 
