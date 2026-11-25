@@ -127,3 +127,27 @@ test('Chronik verweist nur auf bekannte Arten', () => {
     }
   }
 });
+
+test('Deterministische Mathematik stimmt mit Math überein', async () => {
+  const { dexp, dlog, dsin, dcos, dtanh, datan2 } = await import('../src/detmath.js');
+  const rng = createRng(123);
+  const close = (a, b, tol, what) => assert.ok(Math.abs(a - b) <= tol * Math.max(1, Math.abs(b)), `${what}: ${a} ≠ ${b}`);
+  for (let i = 0; i < 4000; i++) {
+    const x = rng.range(-40, 40);
+    close(dexp(x), Math.exp(x), 4e-15, `exp(${x})`);
+    const y = Math.exp(rng.range(-60, 60));
+    close(dlog(y), Math.log(y), 4e-15, `log(${y})`);
+    const a = rng.range(-1300, 1300);
+    close(dsin(a), Math.sin(a), 2e-13, `sin(${a})`);
+    close(dcos(a), Math.cos(a), 2e-13, `cos(${a})`);
+    const t = rng.range(-8, 8);
+    close(dtanh(t), Math.tanh(t), 4e-15, `tanh(${t})`);
+    const u = rng.range(-5, 5);
+    const v = rng.range(-5, 5);
+    close(datan2(u, v), Math.atan2(u, v), 4e-15, `atan2(${u}, ${v})`);
+  }
+  assert.equal(dlog(1), 0);
+  assert.equal(dexp(0), 1);
+  assert.equal(datan2(0, 0), 0);
+  assert.equal(dtanh(50), 1);
+});

@@ -1,6 +1,7 @@
 // Die Welt: ein toroidales Becken, Algen, wanderndes Licht, und die Wesen darin.
 // Alles hier ist ohne DOM lauffähig, damit es sich in Node testen lässt.
 
+import { dexp, dlog, dsin, dcos, datan2 } from './detmath.js';
 import { createRng } from './rng.js';
 import { N_IN, N_HID, N_OUT, randomGenome, mutateGenome, cloneGenome, genomeDistance, hueDistance, wrapHue } from './genome.js';
 import { think } from './brain.js';
@@ -16,6 +17,8 @@ const HASH = 80;
 const HCOLS = Math.ceil(WORLD_W / HASH);
 const HROWS = Math.ceil(WORLD_H / HASH);
 const TAU = Math.PI * 2;
+const COS7 = dcos(0.7);
+const SIN7 = dsin(0.7);
 
 export const PARAMS = {
   algaeGrowth: 0.0065,
@@ -30,7 +33,7 @@ export const PARAMS = {
   biteEfficiency: 0.75,
   reproduceAt: 0.7,
   maturity: 160,
-  speciation: 3.0,
+  speciation: 2.5,
   establishAt: 10,
   minPopulation: 14,
 };
@@ -74,7 +77,7 @@ export class World {
     this.events = [];
     this.history = [];
     this.sampleEvery = 30;
-    this.records = { oldestDays: 5, maxPop: 0, maxGen: 0, nextGen: 10, firstKill: false, lastCrash: -Infinity };
+    this.records = { oldestDays: 5, maxPop: 0, loggedPop: 0, lastPopLog: -Infinity, maxGen: 0, nextGen: 10, firstKill: false, lastCrash: -Infinity };
     this.births = 0;
     this.deaths = { hunger: 0, age: 0, eaten: 0 };
     this.lastImmigration = -Infinity;
@@ -112,7 +115,7 @@ export class World {
 
   // Die Welt beginnt um 8 Uhr morgens; Mittag ist am hellsten.
   dayFactor(t = this.t) {
-    return 0.6 + 0.4 * Math.sin((TAU * t) / DAY - Math.PI / 2 + 2.094);
+    return 0.6 + 0.4 * dsin((TAU * t) / DAY - Math.PI / 2 + 2.094);
   }
 
   clock(t = this.t) {
@@ -127,19 +130,28 @@ export class World {
 
   updateLight() {
     for (const b of this.blobs) {
-      b.x = wrapCoord(((b.cx + b.ax * Math.sin((TAU * this.t) / b.periodX + b.px)) % WORLD_W + WORLD_W) % WORLD_W, WORLD_W);
-      b.y = wrapCoord(((b.cy + b.ay * Math.sin((TAU * this.t) / b.periodY + b.py)) % WORLD_H + WORLD_H) % WORLD_H, WORLD_H);
+      b.x = wrapCoord(((b.cx + b.ax * dsin((TAU * this.t) / b.periodX + b.px)) % WORLD_W + WORLD_W) % WORLD_W, WORLD_W);
+      b.y = wrapCoord(((b.cy + b.ay * dsin((TAU * this.t) / b.periodY + b.py)) % WORLD_H + WORLD_H) % WORLD_H, WORLD_H);
     }
-    for (let row = 0; row < ROWS; row++) {
-      const y = (row + 0.5) * CELL;
+    // Die Gaußglocke zerfällt in einen x- und einen y-Faktor: 130 statt 4000 Exponentialfunktionen je Fleck.
+    const gx = this._gx || (this._gx = this.blobs.map(() => new Float64Array(COLS)));
+    const gy = this._gy || (this._gy = this.blobs.map(() => new Float64Array(ROWS)));
+    this.blobs.forEach((b, k) => {
+      const inv = 1 / (2 * b.r * b.r);
       for (let col = 0; col < COLS; col++) {
-        const x = (col + 0.5) * CELL;
+        const dx = torusDelta((col + 0.5) * CELL - b.x, WORLD_W);
+        gx[k][col] = dexp(-dx * dx * inv);
+      }
+      for (let row = 0; row < ROWS; row++) {
+        const dy = torusDelta((row + 0.5) * CELL - b.y, WORLD_H);
+        gy[k][row] = dexp(-dy * dy * inv);
+      }
+    });
+    const nb = this.blobs.length;
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
         let L = 0.08;
-        for (const b of this.blobs) {
-          const dx = torusDelta(x - b.x, WORLD_W);
-          const dy = torusDelta(y - b.y, WORLD_H);
-          L += 0.95 * Math.exp(-(dx * dx + dy * dy) / (2 * b.r * b.r));
-        }
+        for (let k = 0; k < nb; k++) L += 0.95 * gx[k][col] * gy[k][row];
         this.light[row * COLS + col] = L > 1 ? 1 : L;
       }
     }
@@ -288,7 +300,8 @@ export class World {
         inp[0] = inp[1] = inp[2] = inp[3] = rng.next();
         inp[N_IN - 1] = 1;
         think(g.w, inp, hid, out);
-        const thrust = ((out[1] + 1) / 2) ** 1.5;
+        const half = (out[1] + 1) / 2;
+        const thrust = half * Math.sqrt(half);
         score += thrust > 0.15 && thrust < 0.65 ? 1 : 0;
         score -= out[2] > 0.5 ? 0.7 : 0;
         score -= Math.abs(out[0]) > 0.8 ? 0.3 : 0;
@@ -313,6 +326,11 @@ export class World {
       a: this.rng.range(-Math.PI, Math.PI),
       energy,
       maxE: 12 * m,
+      // Größenabhängige Faktoren, einmal pro Leben berechnet.
+      speedF: dexp(0.35 * dlog(6 / g.size)), // kleine sind flinker
+      eatF: dexp(1.7 * dlog(g.size / 6)), // Ertrag beim Grasen ∝ Größe^1,7
+      ca: 1,
+      sa: 0,
       age: 0,
       maxAge: Math.round(DAY * (4 + g.size * 0.45)),
       gen,
@@ -399,13 +417,16 @@ export class World {
     const a = c.a;
 
     inp[0] = this.algaeAt(c.x, c.y);
-    inp[1] = this.algaeAt(c.x + Math.cos(a) * probe, c.y + Math.sin(a) * probe);
-    inp[2] = this.algaeAt(c.x + Math.cos(a - 0.7) * probe, c.y + Math.sin(a - 0.7) * probe);
-    inp[3] = this.algaeAt(c.x + Math.cos(a + 0.7) * probe, c.y + Math.sin(a + 0.7) * probe);
+    const ca = dcos(a);
+    const sa = dsin(a);
+    // Seitliche Fühler per Additionstheorem, ±0,7 rad neben der Blickrichtung.
+    inp[1] = this.algaeAt(c.x + ca * probe, c.y + sa * probe);
+    inp[2] = this.algaeAt(c.x + (ca * COS7 + sa * SIN7) * probe, c.y + (sa * COS7 - ca * SIN7) * probe);
+    inp[3] = this.algaeAt(c.x + (ca * COS7 - sa * SIN7) * probe, c.y + (sa * COS7 + ca * SIN7) * probe);
 
     const n = this.nearest(c);
     if (n) {
-      inp[4] = wrapAngle(Math.atan2(n.dy, n.dx) - a) / Math.PI;
+      inp[4] = wrapAngle(datan2(n.dy, n.dx) - a) / Math.PI;
       inp[5] = 1 - n.d / g.sense;
       inp[6] = clamp((n.o.g.size - s) / s, -1, 1);
       inp[7] = clamp(1 - hueDistance(n.o.g.hue, g.hue) / 30, -1, 1);
@@ -416,14 +437,15 @@ export class World {
     inp[9] = this.light[this.cellIndex(c.x, c.y)] * day * 2 - 1;
     inp[10] = c.mem0;
     inp[11] = c.mem1;
-    inp[12] = Math.sin(c.age * g.freq + c.phase);
+    inp[12] = dsin(c.age * g.freq + c.phase);
     inp[13] = 1;
 
     const out = c.output;
     think(g.w, inp, c.hidden, out);
 
     c.turn = out[0] * 0.22;
-    c.thrust = ((out[1] + 1) / 2) ** 1.5;
+    const half = (out[1] + 1) / 2;
+    c.thrust = half * Math.sqrt(half); // ^1.5, ohne Math.pow: das rechnet nicht in jeder Engine gleich
     c.attacking = out[2] > 0.5;
     c.mem0 = out[3];
     c.mem1 = out[4];
@@ -431,13 +453,15 @@ export class World {
     c.turnAvg += (Math.abs(out[0]) - c.turnAvg) * 0.01;
 
     c.a = wrapAngle(c.a + c.turn);
-    const speed = c.thrust * PARAMS.maxSpeed * Math.pow(6 / s, 0.35);
-    c.x = wrapCoord(c.x + Math.cos(c.a) * speed, WORLD_W);
-    c.y = wrapCoord(c.y + Math.sin(c.a) * speed, WORLD_H);
+    const speed = c.thrust * PARAMS.maxSpeed * c.speedF;
+    c.ca = dcos(c.a);
+    c.sa = dsin(c.a);
+    c.x = wrapCoord(c.x + c.ca * speed, WORLD_W);
+    c.y = wrapCoord(c.y + c.sa * speed, WORLD_H);
 
     // Grasen: wer stillhält, frisst gründlicher.
     const ci = this.cellIndex(c.x, c.y);
-    const bite = Math.min(this.algae[ci], this.algae[ci] * PARAMS.eatRate * 6 * (s / 6) ** 1.7 * (1 - 0.6 * c.thrust) * 1.6);
+    const bite = Math.min(this.algae[ci], this.algae[ci] * PARAMS.eatRate * 6 * c.eatF * (1 - 0.6 * c.thrust) * 1.6);
     this.algae[ci] -= bite;
     c.energy += bite * PARAMS.algaeEnergy;
 
@@ -493,8 +517,8 @@ export class World {
     const back = c.g.size * 2;
     const child = this.spawn(
       childG,
-      wrapCoord(c.x - Math.cos(c.a) * back, WORLD_W),
-      wrapCoord(c.y - Math.sin(c.a) * back, WORLD_H),
+      wrapCoord(c.x - c.ca * back, WORLD_W),
+      wrapCoord(c.y - c.sa * back, WORLD_H),
       cladeId,
       c.gen + 1,
       c.id,
@@ -617,12 +641,13 @@ export class World {
     const pop = this.creatures.length;
     const r = this.records;
     if (pop > r.maxPop) {
-      if (this.t > DAY * 2 && pop > r.maxPop * 1.25 && pop > 100) {
+      // Höchstens eine Meldung pro Tag, sonst überschwemmt ein Boom die Chronik.
+      if (this.t > DAY * 2 && pop > 100 && pop > r.loggedPop * 1.25 && this.t - r.lastPopLog > DAY) {
         this.log(`Ein neuer Höchststand: ${pop} Tiere leben im Becken.`);
-        r.maxPop = pop;
-      } else if (this.t <= DAY * 2) {
-        r.maxPop = pop;
+        r.loggedPop = pop;
+        r.lastPopLog = this.t;
       }
+      r.maxPop = pop;
     }
     let oldest = null;
     for (const c of this.creatures) if (!oldest || c.age > oldest.age) oldest = c;

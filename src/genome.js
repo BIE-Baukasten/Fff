@@ -1,5 +1,7 @@
 // Das Erbgut eines Wesens: Körpermerkmale plus die Gewichte seines kleinen Gehirns.
 
+import { dexp } from './detmath.js';
+
 export const INPUT_LABELS = [
   'Algen hier',
   'Algen vorn',
@@ -74,8 +76,8 @@ export function mutateGenome(g, rng) {
   c.hue = wrapHue(c.hue + rng.gauss() * 2.5);
   if (rng.next() < 0.6) c.size = clamp(c.size + rng.gauss() * 0.35, ...LIMITS.size);
   if (rng.next() < 0.6) c.sense = clamp(c.sense + rng.gauss() * 4, ...LIMITS.sense);
-  if (rng.next() < 0.4) c.freq = clamp(c.freq * Math.exp(rng.gauss() * 0.15), ...LIMITS.freq);
-  c.mut = clamp(c.mut * Math.exp(rng.gauss() * 0.08), ...LIMITS.mut);
+  if (rng.next() < 0.4) c.freq = clamp(c.freq * dexp(rng.gauss() * 0.15), ...LIMITS.freq);
+  c.mut = clamp(c.mut * dexp(rng.gauss() * 0.08), ...LIMITS.mut);
   return c;
 }
 

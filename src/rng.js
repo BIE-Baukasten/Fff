@@ -1,5 +1,7 @@
 // Deterministischer Zufallsgenerator (mulberry32) — gleiche Saat, gleiche Welt.
 
+import { dlog } from './detmath.js';
+
 export function createRng(seed) {
   let s = seed >>> 0;
   let spare = null;
@@ -35,7 +37,7 @@ export function createRng(seed) {
         v = next() * 2 - 1;
         r = u * u + v * v;
       } while (r >= 1 || r === 0);
-      const m = Math.sqrt((-2 * Math.log(r)) / r);
+      const m = Math.sqrt((-2 * dlog(r)) / r);
       spare = v * m;
       return u * m;
     },

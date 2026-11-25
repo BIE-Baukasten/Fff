@@ -584,7 +584,7 @@ function wireControls() {
 function boot() {
   // Das Standardbecken läuft schon ein paar Tage, damit es beim Öffnen belebt ist.
   const fromHash = seedFromHash();
-  startWorld(fromHash ?? 20261125, fromHash === null ? 5 : 0);
+  startWorld(fromHash ?? 20300720, fromHash === null ? 5 : 0);
   wireControls();
   refreshCharts();
   requestAnimationFrame(frame);
