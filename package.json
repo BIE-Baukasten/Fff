@@ -1,0 +1,27 @@
+{
+  "name": "anima",
+  "version": "1.0.0",
+  "description": "ANIMA \u2013 ein hom\u00f6ostatischer k\u00fcnstlicher Organismus zur kausalen Validierung von Bewusstseinsmarkern",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test/",
+    "study": "node scripts/run-study.mjs",
+    "analyze": "node scripts/analyze.mjs",
+    "build": "node scripts/build-web.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BIE-Baukasten/Fff.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BIE-Baukasten/Fff/issues"
+  },
+  "homepage": "https://github.com/BIE-Baukasten/Fff#readme",
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  },
+  "type": "module"
+}
