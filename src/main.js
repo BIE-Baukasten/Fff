@@ -78,9 +78,24 @@ function startWorld(seed, warmDays = 0) {
   } catch {
     /* Manche Rahmen verbieten das; die Saat steht trotzdem im Feld. */
   }
-  // Mit einem Tier im Blick beginnen, damit das Gehirn sofort zu sehen ist.
-  selectCreature(state.world.creatures[0] || null);
+  // Mit einem Tier im Blick beginnen, damit das Gehirn sofort zu sehen ist:
+  // ein junges, gut genährtes Exemplar der häufigsten Art, das eine Weile leben dürfte.
+  selectCreature(pickProtagonist(state.world));
   refreshPanels(true);
+}
+
+function pickProtagonist(w) {
+  const top = w.livingSpecies()[0];
+  let best = null;
+  let bestScore = -Infinity;
+  for (const c of w.creatures) {
+    const score = c.energy / c.maxE - c.age / c.maxAge + (top && w.displayClade(c.clade) === top.clade ? 0.5 : 0);
+    if (score > bestScore) {
+      bestScore = score;
+      best = c;
+    }
+  }
+  return best;
 }
 
 function seedFromHash() {
@@ -393,6 +408,7 @@ function refreshHud() {
 }
 
 function refreshPanels(force = false) {
+  syncTouch();
   refreshHud();
   refreshSpeciesList();
   refreshChronicle();
@@ -409,7 +425,12 @@ function frame(now) {
       do w.step();
       while (performance.now() - start < 24);
     } else {
-      for (let i = 0; i < state.speed; i++) w.step();
+      // Bei vielen Tieren nicht mehr als ~20 ms pro Bild rechnen, damit es flüssig bleibt.
+      const start = performance.now();
+      for (let i = 0; i < state.speed; i++) {
+        w.step();
+        if (i % 4 === 3 && performance.now() - start > 20) break;
+      }
     }
     handleDeath();
   }
@@ -439,10 +460,18 @@ function setSpeed(s) {
   if (state.paused) setPaused(false);
 }
 
+// Auf Touchgeräten darf man über das Becken hinweg die Seite scrollen,
+// solange nicht hineingezoomt ist und nicht gefüttert wird.
+function syncTouch() {
+  const own = state.renderer.cam.zoom > 1.01 || state.tool === 'feed';
+  $('stage').style.touchAction = own ? 'none' : 'pan-y';
+}
+
 function setTool(t) {
   state.tool = t;
   for (const b of document.querySelectorAll('[data-tool]')) b.setAttribute('aria-pressed', String(b.dataset.tool === t));
   $('stage').classList.toggle('feeding', t === 'feed');
+  syncTouch();
 }
 
 function wireControls() {
@@ -506,6 +535,12 @@ function wireControls() {
   // Zeiger im Becken: antippen wählt, ziehen verschiebt, im Futtermodus wird gestreut.
   const canvas = $('world');
   let down = null;
+  let pinch = null;
+  const pointers = new Map();
+  const spread = () => {
+    const [a, b] = [...pointers.values()];
+    return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
   const local = (e) => {
     const r = canvas.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
@@ -517,12 +552,29 @@ function wireControls() {
   canvas.addEventListener('pointerdown', (e) => {
     canvas.setPointerCapture(e.pointerId);
     const p = local(e);
+    pointers.set(e.pointerId, p);
+    if (pointers.size === 2) {
+      // Zwei Finger: zoomen statt wählen oder streuen.
+      pinch = spread();
+      down = null;
+      return;
+    }
     down = { ...p, last: p, moved: false, feed: state.tool === 'feed' || e.shiftKey };
     if (down.feed) feed(p);
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (!down) return;
+    if (!pointers.has(e.pointerId)) return;
     const p = local(e);
+    pointers.set(e.pointerId, p);
+    if (pinch && pointers.size >= 2) {
+      const now = spread();
+      if (pinch.d > 0) state.renderer.zoomAt(now.x, now.y, now.d / pinch.d);
+      state.renderer.pan(now.x - pinch.x, now.y - pinch.y);
+      pinch = now;
+      syncTouch();
+      return;
+    }
+    if (!down) return;
     if (Math.hypot(p.x - down.x, p.y - down.y) > 5) down.moved = true;
     if (down.feed) feed(p);
     else if (down.moved) {
@@ -531,7 +583,12 @@ function wireControls() {
     }
     down.last = p;
   });
+  const release = (e) => {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+  };
   canvas.addEventListener('pointerup', (e) => {
+    release(e);
     if (!down) return;
     const p = local(e);
     if (!down.moved && !down.feed) {
@@ -541,13 +598,17 @@ function wireControls() {
     }
     down = null;
   });
-  canvas.addEventListener('pointercancel', () => (down = null));
+  canvas.addEventListener('pointercancel', (e) => {
+    release(e);
+    down = null;
+  });
   canvas.addEventListener(
     'wheel',
     (e) => {
       e.preventDefault();
       const p = local(e);
       state.renderer.zoomAt(p.x, p.y, Math.exp(-e.deltaY * 0.0015));
+      syncTouch();
     },
     { passive: false },
   );

@@ -28,14 +28,14 @@ export function prepCanvas(canvas, cssHeight) {
 function niceMax(v) {
   if (v <= 10) return 10;
   const p = Math.pow(10, Math.floor(Math.log10(v)));
-  for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p;
+  for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p;
   return v;
 }
 
 export function drawPopulation(canvas, world) {
   const { ctx, w, h } = prepCanvas(canvas);
   const hist = world.history;
-  const pad = { l: 34, r: 8, t: 10, b: 20 };
+  const pad = { l: 34, r: 8, t: 14, b: 20 };
   const iw = w - pad.l - pad.r;
   const ih = h - pad.t - pad.b;
   if (hist.length < 2 || iw < 20) return;
@@ -108,6 +108,19 @@ export function drawPopulation(canvas, world) {
   }
   ctx.stroke();
   ctx.setLineDash([]);
+
+  // Kleine Kerben oben markieren, wann eine neue Art entstand.
+  for (const clade of world.clades.values()) {
+    if (!clade.established || !clade.parent || clade.born < t0) continue;
+    const x = X(clade.born);
+    ctx.fillStyle = cladeColor(clade, 75, 62);
+    ctx.beginPath();
+    ctx.moveTo(x - 3.5, pad.t - 6);
+    ctx.lineTo(x + 3.5, pad.t - 6);
+    ctx.lineTo(x, pad.t);
+    ctx.closePath();
+    ctx.fill();
+  }
 
   // Endpunkt betonen.
   const last = hist[hist.length - 1];

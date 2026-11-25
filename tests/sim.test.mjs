@@ -151,3 +151,14 @@ test('Deterministische Mathematik stimmt mit Math überein', async () => {
   assert.equal(datan2(0, 0), 0);
   assert.equal(dtanh(50), 1);
 });
+
+test('Uhr: Start um 8 Uhr an Tag 1, Tageswechsel um Mitternacht', () => {
+  const w = new World(1);
+  assert.deepEqual(w.clock(0), { day: 1, hour: 8, minute: 0 });
+  assert.deepEqual(w.clock(DAY * (16 / 24)), { day: 2, hour: 0, minute: 0 });
+  assert.deepEqual(w.clock(DAY * (16 / 24) - 1).day, 1);
+  assert.deepEqual(w.clock(DAY), { day: 2, hour: 8, minute: 0 });
+  // Mittag ist am hellsten.
+  const noon = DAY * (4 / 24);
+  assert.ok(w.dayFactor(noon) > 0.999);
+});

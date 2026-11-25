@@ -118,10 +118,11 @@ export class World {
     return 0.6 + 0.4 * dsin((TAU * t) / DAY - Math.PI / 2 + 2.094);
   }
 
+  // Uhrzeit im Becken: Takt 0 ist Tag 1, 08:00; der Tag wechselt um Mitternacht.
   clock(t = this.t) {
-    const frac = (t % DAY) / DAY;
-    const minutes = Math.floor(((frac * 24 + 8) % 24) * 60);
-    return { day: Math.floor(t / DAY) + 1, hour: Math.floor(minutes / 60), minute: minutes % 60 };
+    const since = t + (8 / 24) * DAY;
+    const minutes = Math.floor(((since % DAY) / DAY) * 24 * 60);
+    return { day: Math.floor(since / DAY) + 1, hour: Math.floor(minutes / 60), minute: minutes % 60 };
   }
 
   isNight(t = this.t) {
