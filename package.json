@@ -1,0 +1,13 @@
+{
+  "name": "gezeitenbecken",
+  "version": "1.0.0",
+  "description": "Eine Künstliches-Leben-Simulation: Wesen mit kleinen Gehirnen grasen, jagen, mutieren und bilden Arten.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node tools/build.mjs",
+    "probe": "node tools/probe.mjs"
+  },
+  "license": "MIT"
+}
