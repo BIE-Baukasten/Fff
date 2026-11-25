@@ -103,14 +103,22 @@ export class World {
 
     const founders = [];
     for (let i = 0; i < 4; i++) founders.push(this.immigrate(10, false));
+    this.flushNewborn();
     this.log('Die ersten Siedler treiben ins Becken: ', ...joinClades(founders), '.');
     this.sample();
   }
 
   // ---------- Umwelt ----------
 
+  // Die Welt beginnt um 8 Uhr morgens; Mittag ist am hellsten.
   dayFactor(t = this.t) {
-    return 0.6 + 0.4 * Math.sin((TAU * t) / DAY - Math.PI / 2 + 0.6);
+    return 0.6 + 0.4 * Math.sin((TAU * t) / DAY - Math.PI / 2 + 2.094);
+  }
+
+  clock(t = this.t) {
+    const frac = (t % DAY) / DAY;
+    const minutes = Math.floor(((frac * 24 + 8) % 24) * 60);
+    return { day: Math.floor(t / DAY) + 1, hour: Math.floor(minutes / 60), minute: minutes % 60 };
   }
 
   isNight(t = this.t) {
@@ -470,7 +478,7 @@ export class World {
     const clade = this.clades.get(c.clade);
     if (genomeDistance(childG, clade.founder) > PARAMS.speciation) {
       // Abspaltung: die Färbung springt sichtbar, damit man den neuen Zweig erkennt.
-      childG.hue = wrapHue(childG.hue + (rng.chance(0.5) ? 1 : -1) * rng.range(18, 40));
+      childG.hue = wrapHue(childG.hue + (rng.chance(0.5) ? 1 : -1) * rng.range(35, 70));
       let genus = clade.genus;
       let depth = clade.depth + 1;
       if (depth >= 4) {
@@ -520,7 +528,8 @@ export class World {
       this.records.firstKill = true;
       const a = this.displayClade(hunter.clade);
       const b = this.displayClade(prey.clade);
-      this.log('Erste Jagd beobachtet: ein Exemplar von ', { clade: a.id }, ' frisst eines von ', { clade: b.id }, '.');
+      if (a.id === b.id) this.log('Erste Jagd beobachtet, und gleich Kannibalismus: ', { clade: a.id }, ' frisst die eigene Art.');
+      else this.log('Erste Jagd beobachtet: ein Exemplar von ', { clade: a.id }, ' frisst eines von ', { clade: b.id }, '.');
     }
   }
 
@@ -568,12 +577,19 @@ export class World {
       else this.byId.delete(c.id);
     }
     list.length = w;
-    for (const c of this._newborn) if (c.alive) list.push(c);
-    this._newborn.length = 0;
+    this.flushNewborn();
 
-    if (list.length < PARAMS.minPopulation && this.t - this.lastImmigration > 240) this.immigrate(10);
+    if (list.length < PARAMS.minPopulation && this.t - this.lastImmigration > 240) {
+      this.immigrate(10);
+      this.flushNewborn();
+    }
     if (this.t % this.sampleEvery === 0) this.sample();
     if (this.t % 60 === 0) this.checkRecords();
+  }
+
+  flushNewborn() {
+    for (const c of this._newborn) if (c.alive) this.creatures.push(c);
+    this._newborn.length = 0;
   }
 
   sample() {
@@ -585,6 +601,11 @@ export class World {
     }
     let sum = 0;
     for (let i = 0; i < this.algae.length; i++) sum += this.algae[i];
+    // Höchststand zählt die Art samt ihrer noch unbenannten Seitenzweige.
+    for (const [id, n] of counts) {
+      const clade = this.clades.get(id);
+      if (clade && n > clade.peak) clade.peak = n;
+    }
     this.history.push({ t: this.t, pop: this.creatures.length, algae: sum / this.algae.length, counts });
     if (this.history.length > 720) {
       this.history = this.history.filter((_, i) => i % 2 === 0);
@@ -596,7 +617,7 @@ export class World {
     const pop = this.creatures.length;
     const r = this.records;
     if (pop > r.maxPop) {
-      if (this.t > DAY * 2 && pop > r.maxPop * 1.15 && pop > 60) {
+      if (this.t > DAY * 2 && pop > r.maxPop * 1.25 && pop > 100) {
         this.log(`Ein neuer Höchststand: ${pop} Tiere leben im Becken.`);
         r.maxPop = pop;
       } else if (this.t <= DAY * 2) {
