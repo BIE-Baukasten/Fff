@@ -107,7 +107,7 @@ export class Agent {
     this.stats.homeoErr += D;
 
     // 2. PERCEIVE
-    const sense = world.sense(b.x, b.y);
+    const sense = world.sense(b.x, b.y); this._lastSense = sense;
     const surprise = this.wm.step(sense, this.lastAction, this.learning);
     const here = world.objectsAt(b.x, b.y);
     const bush = here.find(o => o.type === 'bush' && o.berries > 0);

@@ -4,7 +4,7 @@
   "description": "ANIMA \u2013 ein hom\u00f6ostatischer k\u00fcnstlicher Organismus zur kausalen Validierung von Bewusstseinsmarkern",
   "main": "index.js",
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.mjs",
     "study": "node scripts/run-study.mjs",
     "analyze": "node scripts/analyze.mjs",
     "build": "node scripts/build-web.mjs"
