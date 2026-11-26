@@ -251,6 +251,28 @@ button { cursor: pointer; }
 .legend i.tick { width: 0; height: 0; border: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 6px solid var(--lantern); vertical-align: 1px; }
 .legend i.area { height: 8px; border: 0; border-radius: 2px; background: linear-gradient(90deg, hsl(200 55% 52%), hsl(30 55% 52%)); vertical-align: 0; }
 
+/* Messwerte und Versuchsaufbau */
+.metric-pick { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--mist); }
+.metric-pick select, .params input[type="number"] {
+  background: var(--abyss);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font: 13px var(--body);
+  color: var(--foam);
+  min-width: 0;
+}
+.metric-pick select { flex: 1; }
+.params { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 8px 12px; align-items: center; font-size: 13px; }
+.params label { color: var(--foam); }
+.params label small { display: block; color: var(--mist); font-size: 11.5px; }
+.params input[type="number"] { font-family: var(--mono); font-variant-numeric: tabular-nums; width: 100%; }
+.params .check { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; }
+.params .check input { accent-color: var(--lantern); width: 16px; height: 16px; }
+.params .actions { grid-column: 1 / -1; margin-top: 4px; }
+.csv { width: 100%; height: 120px; background: var(--abyss); color: var(--foam); border: 1px solid var(--line); border-radius: 8px; font: 11px var(--mono); padding: 8px; }
+code { font: 12px var(--mono); color: var(--foam); }
+
 /* Chronik */
 .chronicle { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
 .chronicle li { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 10px; font-size: 13.5px; line-height: 1.45; }
@@ -348,14 +370,51 @@ button { cursor: pointer; }
       </div>
     </section>
 
+    <section class="panel" id="measurePanel">
+      <h2>Messwerte <span class="eyebrow" id="measureDay"></span></h2>
+      <dl class="stats" id="metricGrid"></dl>
+      <div class="metric-pick">
+        <label for="metricSelect">Verlauf von</label>
+        <select id="metricSelect"></select>
+      </div>
+      <canvas class="chart" id="metricChart"></canvas>
+      <p class="note" id="metricNote"></p>
+      <div class="actions">
+        <button class="btn" type="button" id="copyCsv">Messreihe kopieren (CSV)</button>
+      </div>
+      <textarea id="csvFallback" class="csv" readonly hidden aria-label="Messreihe als CSV"></textarea>
+    </section>
+
+    <section class="panel">
+      <h2>Versuchsaufbau <span class="eyebrow" id="paramDiff"></span></h2>
+      <form id="paramForm" class="params">
+        <label class="check" for="pPredation"><input type="checkbox" id="pPredation"> Angriffe wirken (Räuber möglich)</label>
+        <label for="pImmigration">Einwanderung bis Tag <small>leer = immer</small></label>
+        <input id="pImmigration" type="number" min="0" step="1" inputmode="numeric">
+        <label for="pGrowth">Algenwachstum</label>
+        <input id="pGrowth" type="number" min="0.001" max="0.03" step="0.0005" inputmode="decimal">
+        <label for="pMutation">Mutationsfaktor</label>
+        <input id="pMutation" type="number" min="0" max="5" step="0.1" inputmode="decimal">
+        <label for="pDisturbEvery">Sturm alle … Tage <small>0 = nie</small></label>
+        <input id="pDisturbEvery" type="number" min="0" step="0.5" inputmode="decimal">
+        <label for="pDisturbStrength">Sturm tötet Anteil</label>
+        <input id="pDisturbStrength" type="number" min="0" max="1" step="0.05" inputmode="decimal">
+        <label for="pSpeciation">Artschwelle <small>ändert nur die Zählung</small></label>
+        <input id="pSpeciation" type="number" min="0.5" max="10" step="0.1" inputmode="decimal">
+        <div class="actions"><button class="btn primary" type="submit">Neu säen mit diesen Werten</button><button class="btn" type="button" id="paramReset">Standardwerte</button></div>
+      </form>
+      <p class="note">Gleiche Saat und gleiche Werte ergeben in jedem Browser dieselbe Welt; Füttern und Eingriffe zählen nicht dazu. Versuche mit vielen Saaten und Statistik rechnet <code>tools/experiment.mjs</code>.</p>
+    </section>
+
     <section class="panel">
       <h2>Eingriffe</h2>
       <div class="actions" id="interventions">
         <button class="btn" type="button" data-intervene="bloom">Algenblüte</button>
         <button class="btn" type="button" data-intervene="murk">Trübung</button>
         <button class="btn" type="button" data-intervene="current">Strömung</button>
+        <button class="btn" type="button" data-intervene="storm">Sturm</button>
       </div>
-      <p class="note">Wie reagieren die Arten auf Überfluss, auf einen Tag ohne Licht, auf plötzliche Nachbarn? Jeder Eingriff landet in der Chronik.</p>
+      <p class="note">Wie reagieren die Arten auf Überfluss, auf einen Tag ohne Licht, auf plötzliche Nachbarn, auf den Verlust der Hälfte aller Tiere? Jeder Eingriff landet in der Chronik.</p>
     </section>
 
     <section class="panel">
@@ -2240,6 +2299,76 @@ function drawPopulation(canvas, world) {
   ctx.fill();
 }
 
+function ticksFor(lo, hi, n = 3) {
+  if (!(hi > lo)) hi = lo + 1;
+  const step0 = (hi - lo) / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= step0);
+  const out = [];
+  for (let v = Math.floor(lo / step) * step; v <= hi + step * 1e-6; v += step) out.push(+v.toPrecision(10));
+  if (out.at(-1) < hi) out.push(+(out.at(-1) + step).toPrecision(10));
+  return out;
+}
+
+const deNum = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
+
+// Verlauf einer Messgröße über die Zeit.
+function drawSeries(canvas, world, key) {
+  const { ctx, w, h } = prepCanvas(canvas);
+  const hist = world.history.filter((s) => s.m);
+  const pad = { l: 40, r: 10, t: 10, b: 20 };
+  const iw = w - pad.l - pad.r;
+  const ih = h - pad.t - pad.b;
+  if (hist.length < 2 || iw < 20) return;
+  const vals = hist.map((s) => s.m[key]);
+  const ticks = ticksFor(Math.min(0, ...vals), Math.max(...vals) * 1.05 || 1);
+  const lo = ticks[0];
+  const hi = ticks.at(-1);
+  const t0 = hist[0].t;
+  const t1 = Math.max(hist.at(-1).t, t0 + DAY);
+  const X = (t) => pad.l + ((t - t0) / (t1 - t0)) * iw;
+  const Y = (v) => pad.t + ih - ((v - lo) / (hi - lo)) * ih;
+
+  ctx.font = MONO;
+  ctx.strokeStyle = GRID;
+  ctx.fillStyle = MUTED;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (const v of ticks) {
+    const y = Math.round(Y(v)) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(w - pad.r, y);
+    ctx.stroke();
+    ctx.fillText(deNum.format(v), pad.l - 6, y);
+  }
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const days = (t1 - t0) / DAY;
+  const step = days <= 8 ? 1 : days <= 20 ? 2 : days <= 50 ? 5 : days <= 120 ? 10 : 25;
+  for (let d = Math.ceil(t0 / DAY / step) * step; d <= t1 / DAY; d += step) {
+    const x = X(d * DAY);
+    if (x > pad.l + 4) ctx.fillText(`T${d + 1}`, x, h - pad.b + 5);
+  }
+
+  ctx.beginPath();
+  hist.forEach((s, i) => (i ? ctx.lineTo(X(s.t), Y(vals[i])) : ctx.moveTo(X(s.t), Y(vals[i]))));
+  ctx.lineTo(X(hist.at(-1).t), Y(lo));
+  ctx.lineTo(X(hist[0].t), Y(lo));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(240, 180, 94, 0.14)';
+  ctx.fill();
+  ctx.beginPath();
+  hist.forEach((s, i) => (i ? ctx.lineTo(X(s.t), Y(vals[i])) : ctx.moveTo(X(s.t), Y(vals[i]))));
+  ctx.strokeStyle = '#f0b45e';
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.fillStyle = INK;
+  ctx.beginPath();
+  ctx.arc(X(hist.at(-1).t), Y(vals.at(-1)), 2.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 // Ordnet benannte Arten als Baum: jedes Kind direkt unter seinem Elternteil.
 function treeRows(world) {
   const est = [...world.clades.values()].filter((c) => c.established);
@@ -2395,7 +2524,7 @@ function drawBrain(canvas, c) {
     ctx.fillText(OUTPUT_LABELS[o], right + 9, yOut(o));
   }
 }
-return { prepCanvas, drawPopulation, treeRows, TREE_ROW, drawTree, drawBrain };
+return { prepCanvas, drawPopulation, drawSeries, treeRows, TREE_ROW, drawTree, drawBrain };
 })();
 
 // ── src/main.js ──
@@ -2404,7 +2533,8 @@ __mod["src/main.js"] = (() => {
 
 const { World, DAY, PARAMS } = __mod["src/world.js"];
 const { Renderer, colorOf, cladeColor } = __mod["src/render.js"];
-const { drawPopulation, drawTree, drawBrain, TREE_ROW } = __mod["src/charts.js"];
+const { drawPopulation, drawTree, drawBrain, drawSeries, TREE_ROW } = __mod["src/charts.js"];
+const { METRICS, toCsv } = __mod["src/metrics.js"];
 const { seedFromText } = __mod["src/rng.js"];
 const $ = (id) => document.getElementById(id);
 const fmt1 = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
@@ -2424,6 +2554,8 @@ const state = {
   lastChart: 0,
   eventsShown: '',
   treeRows: [],
+  params: {}, // vom Standard abweichende Modellparameter
+  metric: 'evolvedDiv',
 };
 
 // ---------- Hilfen ----------
@@ -2467,7 +2599,7 @@ function toast(text) {
 // ---------- Welt ----------
 
 function startWorld(seed, warmDays = 0) {
-  state.world = new World(seed);
+  state.world = new World(seed, { params: state.params });
   for (let i = 0; i < warmDays * DAY; i++) state.world.step();
   if (state.renderer) state.renderer.setWorld(state.world);
   else state.renderer = new Renderer($('world'), state.world);
@@ -2542,7 +2674,7 @@ function handleDeath() {
     const kids = state.world.creatures.filter((k) => k.parent === c.id);
     if (kids.length) {
       kids.sort((a, b) => b.age - a.age);
-      const cause = { hunger: 'ist verhungert', age: 'starb an Altersschwäche', eaten: 'wurde gefressen' }[c.cause];
+      const cause = { hunger: 'ist verhungert', age: 'starb an Altersschwäche', eaten: 'wurde gefressen', disturbed: 'kam im Sturm um' }[c.cause];
       toast(`Nr. ${c.id} ${cause}. Weiter mit Nachkomme Nr. ${kids[0].id}.`);
       selectCreature(kids[0]);
       return;
@@ -2582,7 +2714,7 @@ function buildInspector() {
   root.append(el('div', { class: 'insp-head' }, insp.eyebrow, title, sub));
 
   if (!c.alive) {
-    const cause = { hunger: 'Verhungert', age: 'An Altersschwäche gestorben', eaten: 'Gefressen' }[c.cause];
+    const cause = { hunger: 'Verhungert', age: 'An Altersschwäche gestorben', eaten: 'Gefressen', disturbed: 'Im Sturm umgekommen' }[c.cause];
     root.append(el('p', { class: 'death' }, `${cause} am ${stamp(c.died)}, mit ${days(c.died - c.born)} Tagen und ${c.children} Nachkommen.`));
   }
 
@@ -2792,8 +2924,117 @@ function refreshChronicle() {
   state.lastEventT = ev.length ? ev[ev.length - 1].t : -1;
 }
 
+// ---------- Messwerte und Versuchsaufbau ----------
+
+const GRID_METRICS = ['evolvedDiv', 'geneticDiv', 'effSpecies', 'lineages', 'hunterShare', 'mutMean'];
+const metricInfo = (key) => METRICS.find((m) => m[0] === key);
+const fmtMetric = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+
+function buildMeasurePanel() {
+  const grid = $('metricGrid');
+  for (const key of GRID_METRICS) {
+    const [, label, desc] = metricInfo(key);
+    grid.append(el('div', { title: desc }, el('dt', {}, label), el('dd', { id: `mv-${key}` }, '–')));
+  }
+  const sel = $('metricSelect');
+  for (const [key, label] of METRICS) if (key !== 'day') sel.append(el('option', { value: key }, label));
+  sel.value = state.metric;
+  sel.addEventListener('change', () => {
+    state.metric = sel.value;
+    refreshCharts();
+  });
+  $('copyCsv').addEventListener('click', copyCsv);
+}
+
+function refreshMeasures() {
+  const last = state.world.history.at(-1)?.m;
+  if (!last) return;
+  $('measureDay').textContent = `Tag ${fmt1.format(last.day)}`;
+  for (const key of GRID_METRICS) {
+    const v = last[key];
+    $(`mv-${key}`).textContent = key === 'hunterShare' ? `${fmt0.format(v * 100)} %` : key === 'mutMean' ? v.toFixed(3).replace('.', ',') : fmtMetric.format(v);
+  }
+  $('metricNote').textContent = metricInfo(state.metric)[2] + '.';
+}
+
+function csvText() {
+  const w = state.world;
+  const head = [`# Gezeitenbecken-Messreihe`, `# saat=${w.seed}`, ...Object.entries(w.p).map(([k, v]) => `# ${k}=${v}`), `# Füttern und Eingriffe in dieser Welt: siehe Chronik`];
+  return head.join('\n') + '\n' + toCsv(w.history.map((h) => h.m), { seed: w.seed });
+}
+
+function copyCsv() {
+  const text = csvText();
+  const rows = state.world.history.length;
+  const fallback = () => {
+    const ta = $('csvFallback');
+    ta.hidden = false;
+    ta.value = text;
+    ta.focus();
+    ta.select();
+    toast('Kopieren ist hier gesperrt. Die Messreihe ist markiert, kopiere sie von Hand.');
+  };
+  try {
+    navigator.clipboard.writeText(text).then(() => toast(`Messreihe kopiert: ${rows} Messungen.`), fallback);
+  } catch {
+    fallback();
+  }
+}
+
+const PARAM_FIELDS = [
+  ['pPredation', 'predation', 'bool'],
+  ['pImmigration', 'immigrationUntil', 'nullable'],
+  ['pGrowth', 'algaeGrowth', 'num'],
+  ['pMutation', 'mutationScale', 'num'],
+  ['pDisturbEvery', 'disturbEvery', 'num'],
+  ['pDisturbStrength', 'disturbStrength', 'num'],
+  ['pSpeciation', 'speciation', 'num'],
+];
+
+function fillParamForm() {
+  const p = { ...PARAMS, ...state.params };
+  for (const [id, key, kind] of PARAM_FIELDS) {
+    const input = $(id);
+    if (kind === 'bool') input.checked = !!p[key];
+    else input.value = p[key] === null ? '' : String(p[key]);
+  }
+  const n = Object.keys(state.params).length;
+  $('paramDiff').textContent = n ? `${n} ${n === 1 ? 'Wert' : 'Werte'} geändert` : 'Standard';
+}
+
+function readParamForm() {
+  const out = {};
+  for (const [id, key, kind] of PARAM_FIELDS) {
+    const input = $(id);
+    let v;
+    if (kind === 'bool') v = input.checked;
+    else if (kind === 'nullable') v = input.value.trim() === '' ? null : Number(input.value);
+    else v = Number(input.value);
+    if (typeof v === 'number' && !Number.isFinite(v)) continue;
+    if (v !== PARAMS[key]) out[key] = v;
+  }
+  return out;
+}
+
+function wireParamForm() {
+  fillParamForm();
+  $('paramForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    state.params = readParamForm();
+    startWorld(state.world.seed);
+    fillParamForm();
+    const n = Object.keys(state.params).length;
+    toast(n ? `Neu gesät mit ${n} geänderten ${n === 1 ? 'Wert' : 'Werten'}.` : 'Neu gesät mit Standardwerten.');
+  });
+  $('paramReset').addEventListener('click', () => {
+    state.params = {};
+    fillParamForm();
+  });
+}
+
 function refreshCharts() {
   const w = state.world;
+  drawSeries($('metricChart'), w, state.metric);
   if (state.view === 'pop') drawPopulation($('popChart'), w);
   else state.treeRows = drawTree($('treeChart'), w, state.species);
 }
@@ -2811,6 +3052,7 @@ function refreshHud() {
 function refreshPanels(force = false) {
   syncTouch();
   refreshHud();
+  refreshMeasures();
   refreshSpeciesList();
   refreshChronicle();
   if (force) refreshCharts();
@@ -2898,7 +3140,7 @@ function wireControls() {
     const b = e.target.closest('[data-intervene]');
     if (!b) return;
     state.world.intervene(b.dataset.intervene);
-    toast({ bloom: 'Algenblüte ausgelöst.', murk: 'Das Wasser trübt sich für einen Tag.', current: 'Die Strömung mischt alle Tiere durch.' }[b.dataset.intervene]);
+    toast({ bloom: 'Algenblüte ausgelöst.', murk: 'Das Wasser trübt sich für einen Tag.', current: 'Die Strömung mischt alle Tiere durch.', storm: 'Ein Sturm fegt durchs Becken.' }[b.dataset.intervene]);
     refreshChronicle();
   });
   $('zoomIn').addEventListener('click', () => state.renderer.zoomAt(state.renderer.cssW / 2, state.renderer.cssH / 2, 1.5));
@@ -3053,8 +3295,10 @@ function wireControls() {
 function boot() {
   // Das Standardbecken läuft schon ein paar Tage, damit es beim Öffnen belebt ist.
   const fromHash = seedFromHash();
+  buildMeasurePanel();
   startWorld(fromHash ?? 20300720, fromHash === null ? 5 : 0);
   wireControls();
+  wireParamForm();
   refreshCharts();
   requestAnimationFrame(frame);
 }

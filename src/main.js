@@ -2,7 +2,8 @@
 
 import { World, DAY, PARAMS } from './world.js';
 import { Renderer, colorOf, cladeColor } from './render.js';
-import { drawPopulation, drawTree, drawBrain, TREE_ROW } from './charts.js';
+import { drawPopulation, drawTree, drawBrain, drawSeries, TREE_ROW } from './charts.js';
+import { METRICS, toCsv } from './metrics.js';
 import { seedFromText } from './rng.js';
 
 const $ = (id) => document.getElementById(id);
@@ -23,6 +24,8 @@ const state = {
   lastChart: 0,
   eventsShown: '',
   treeRows: [],
+  params: {}, // vom Standard abweichende Modellparameter
+  metric: 'evolvedDiv',
 };
 
 // ---------- Hilfen ----------
@@ -66,7 +69,7 @@ function toast(text) {
 // ---------- Welt ----------
 
 function startWorld(seed, warmDays = 0) {
-  state.world = new World(seed);
+  state.world = new World(seed, { params: state.params });
   for (let i = 0; i < warmDays * DAY; i++) state.world.step();
   if (state.renderer) state.renderer.setWorld(state.world);
   else state.renderer = new Renderer($('world'), state.world);
@@ -141,7 +144,7 @@ function handleDeath() {
     const kids = state.world.creatures.filter((k) => k.parent === c.id);
     if (kids.length) {
       kids.sort((a, b) => b.age - a.age);
-      const cause = { hunger: 'ist verhungert', age: 'starb an Altersschwäche', eaten: 'wurde gefressen' }[c.cause];
+      const cause = { hunger: 'ist verhungert', age: 'starb an Altersschwäche', eaten: 'wurde gefressen', disturbed: 'kam im Sturm um' }[c.cause];
       toast(`Nr. ${c.id} ${cause}. Weiter mit Nachkomme Nr. ${kids[0].id}.`);
       selectCreature(kids[0]);
       return;
@@ -181,7 +184,7 @@ function buildInspector() {
   root.append(el('div', { class: 'insp-head' }, insp.eyebrow, title, sub));
 
   if (!c.alive) {
-    const cause = { hunger: 'Verhungert', age: 'An Altersschwäche gestorben', eaten: 'Gefressen' }[c.cause];
+    const cause = { hunger: 'Verhungert', age: 'An Altersschwäche gestorben', eaten: 'Gefressen', disturbed: 'Im Sturm umgekommen' }[c.cause];
     root.append(el('p', { class: 'death' }, `${cause} am ${stamp(c.died)}, mit ${days(c.died - c.born)} Tagen und ${c.children} Nachkommen.`));
   }
 
@@ -391,8 +394,117 @@ function refreshChronicle() {
   state.lastEventT = ev.length ? ev[ev.length - 1].t : -1;
 }
 
+// ---------- Messwerte und Versuchsaufbau ----------
+
+const GRID_METRICS = ['evolvedDiv', 'geneticDiv', 'effSpecies', 'lineages', 'hunterShare', 'mutMean'];
+const metricInfo = (key) => METRICS.find((m) => m[0] === key);
+const fmtMetric = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+
+function buildMeasurePanel() {
+  const grid = $('metricGrid');
+  for (const key of GRID_METRICS) {
+    const [, label, desc] = metricInfo(key);
+    grid.append(el('div', { title: desc }, el('dt', {}, label), el('dd', { id: `mv-${key}` }, '–')));
+  }
+  const sel = $('metricSelect');
+  for (const [key, label] of METRICS) if (key !== 'day') sel.append(el('option', { value: key }, label));
+  sel.value = state.metric;
+  sel.addEventListener('change', () => {
+    state.metric = sel.value;
+    refreshCharts();
+  });
+  $('copyCsv').addEventListener('click', copyCsv);
+}
+
+function refreshMeasures() {
+  const last = state.world.history.at(-1)?.m;
+  if (!last) return;
+  $('measureDay').textContent = `Tag ${fmt1.format(last.day)}`;
+  for (const key of GRID_METRICS) {
+    const v = last[key];
+    $(`mv-${key}`).textContent = key === 'hunterShare' ? `${fmt0.format(v * 100)} %` : key === 'mutMean' ? v.toFixed(3).replace('.', ',') : fmtMetric.format(v);
+  }
+  $('metricNote').textContent = metricInfo(state.metric)[2] + '.';
+}
+
+function csvText() {
+  const w = state.world;
+  const head = [`# Gezeitenbecken-Messreihe`, `# saat=${w.seed}`, ...Object.entries(w.p).map(([k, v]) => `# ${k}=${v}`), `# Füttern und Eingriffe in dieser Welt: siehe Chronik`];
+  return head.join('\n') + '\n' + toCsv(w.history.map((h) => h.m), { seed: w.seed });
+}
+
+function copyCsv() {
+  const text = csvText();
+  const rows = state.world.history.length;
+  const fallback = () => {
+    const ta = $('csvFallback');
+    ta.hidden = false;
+    ta.value = text;
+    ta.focus();
+    ta.select();
+    toast('Kopieren ist hier gesperrt. Die Messreihe ist markiert, kopiere sie von Hand.');
+  };
+  try {
+    navigator.clipboard.writeText(text).then(() => toast(`Messreihe kopiert: ${rows} Messungen.`), fallback);
+  } catch {
+    fallback();
+  }
+}
+
+const PARAM_FIELDS = [
+  ['pPredation', 'predation', 'bool'],
+  ['pImmigration', 'immigrationUntil', 'nullable'],
+  ['pGrowth', 'algaeGrowth', 'num'],
+  ['pMutation', 'mutationScale', 'num'],
+  ['pDisturbEvery', 'disturbEvery', 'num'],
+  ['pDisturbStrength', 'disturbStrength', 'num'],
+  ['pSpeciation', 'speciation', 'num'],
+];
+
+function fillParamForm() {
+  const p = { ...PARAMS, ...state.params };
+  for (const [id, key, kind] of PARAM_FIELDS) {
+    const input = $(id);
+    if (kind === 'bool') input.checked = !!p[key];
+    else input.value = p[key] === null ? '' : String(p[key]);
+  }
+  const n = Object.keys(state.params).length;
+  $('paramDiff').textContent = n ? `${n} ${n === 1 ? 'Wert' : 'Werte'} geändert` : 'Standard';
+}
+
+function readParamForm() {
+  const out = {};
+  for (const [id, key, kind] of PARAM_FIELDS) {
+    const input = $(id);
+    let v;
+    if (kind === 'bool') v = input.checked;
+    else if (kind === 'nullable') v = input.value.trim() === '' ? null : Number(input.value);
+    else v = Number(input.value);
+    if (typeof v === 'number' && !Number.isFinite(v)) continue;
+    if (v !== PARAMS[key]) out[key] = v;
+  }
+  return out;
+}
+
+function wireParamForm() {
+  fillParamForm();
+  $('paramForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    state.params = readParamForm();
+    startWorld(state.world.seed);
+    fillParamForm();
+    const n = Object.keys(state.params).length;
+    toast(n ? `Neu gesät mit ${n} geänderten ${n === 1 ? 'Wert' : 'Werten'}.` : 'Neu gesät mit Standardwerten.');
+  });
+  $('paramReset').addEventListener('click', () => {
+    state.params = {};
+    fillParamForm();
+  });
+}
+
 function refreshCharts() {
   const w = state.world;
+  drawSeries($('metricChart'), w, state.metric);
   if (state.view === 'pop') drawPopulation($('popChart'), w);
   else state.treeRows = drawTree($('treeChart'), w, state.species);
 }
@@ -410,6 +522,7 @@ function refreshHud() {
 function refreshPanels(force = false) {
   syncTouch();
   refreshHud();
+  refreshMeasures();
   refreshSpeciesList();
   refreshChronicle();
   if (force) refreshCharts();
@@ -497,7 +610,7 @@ function wireControls() {
     const b = e.target.closest('[data-intervene]');
     if (!b) return;
     state.world.intervene(b.dataset.intervene);
-    toast({ bloom: 'Algenblüte ausgelöst.', murk: 'Das Wasser trübt sich für einen Tag.', current: 'Die Strömung mischt alle Tiere durch.' }[b.dataset.intervene]);
+    toast({ bloom: 'Algenblüte ausgelöst.', murk: 'Das Wasser trübt sich für einen Tag.', current: 'Die Strömung mischt alle Tiere durch.', storm: 'Ein Sturm fegt durchs Becken.' }[b.dataset.intervene]);
     refreshChronicle();
   });
   $('zoomIn').addEventListener('click', () => state.renderer.zoomAt(state.renderer.cssW / 2, state.renderer.cssH / 2, 1.5));
@@ -652,8 +765,10 @@ function wireControls() {
 function boot() {
   // Das Standardbecken läuft schon ein paar Tage, damit es beim Öffnen belebt ist.
   const fromHash = seedFromHash();
+  buildMeasurePanel();
   startWorld(fromHash ?? 20300720, fromHash === null ? 5 : 0);
   wireControls();
+  wireParamForm();
   refreshCharts();
   requestAnimationFrame(frame);
 }

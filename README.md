@@ -32,7 +32,7 @@ das Bündel neu. Abhängigkeiten gibt es keine, Node 18 oder neuer reicht.
 | Art ansehen | Artnamen in Liste, Chronik oder Stammbaum antippen |
 | Verschieben, Zoomen | ziehen, Mausrad oder `+` / `−` |
 | Algen streuen | Werkzeug „Füttern“ oder mit gedrückter Umschalttaste ziehen |
-| Eingreifen | Algenblüte, Trübung (ein Tag fast ohne Licht) oder Strömung (mischt alle Tiere) |
+| Eingreifen | Algenblüte, Trübung (ein Tag fast ohne Licht), Strömung (mischt alle Tiere) oder Sturm (tötet die Hälfte) |
 | Pause, Tempo | Leertaste, Tasten `1` bis `4` |
 | Eine bestimmte Welt | Zahl oder Wort ins Feld „Saat“, dann „Säen“ |
 
@@ -86,6 +86,57 @@ zufälligem Erbgut heran. Von zwölf Zufallsgenomen kommt das, dessen Gehirn auf
 zufällige Reize am ehesten gemächlich schwimmt; reiner Zufall wäre fast
 immer sofort verhungert.
 
+## Forschen mit dem Becken
+
+Das Becken ist auch ein Werkzeug für kleine Versuche zur Evolution von
+Gemeinschaften. Die vollständige Modellbeschreibung nach dem ODD-Protokoll
+steht in [`MODELL.md`](MODELL.md), durchgeführte Versuche mit Ergebnissen in
+[`EXPERIMENTE.md`](EXPERIMENTE.md).
+
+**Im Browser.** Unter *Versuchsaufbau* lassen sich Räuber, Einwanderung,
+Algenwachstum, Mutationsfaktor, Stürme und die Artschwelle einstellen. *Messwerte*
+zeigt die Vielfaltsmaße live und als Verlauf; *Messreihe kopieren* liefert alle
+Messungen als CSV, mit Saat und allen Parametern im Kopf.
+
+**Versuche mit Statistik.** Ein Versuch ist eine JSON-Datei in `experiments/`:
+ein Faktor mit mehreren Stufen, eine Zahl von Wiederholungen, die Messgrößen.
+
+```
+node tools/experiment.mjs experiments/praedation.json
+node tools/experiment.mjs experiments/praedation.json --replicates 4 --days 20   # Probelauf
+```
+
+Der Läufer verwendet alle Prozessorkerne. Jede Saat läuft auf jeder Stufe
+(gepaarter Plan), und die Auswertung umfasst:
+
+- 95-%-Bootstrap-Intervalle für die Mittelwerte;
+- exakte Vorzeichen-Permutationstests für zwei Stufen;
+- einen Trendtest (Spearman mit Blockpermutation) für mehr als zwei Stufen;
+- optional einen vorab festgelegten Höckertest;
+- eine Holm-Korrektur über alle Messgrößen.
+
+Die Ergebnisse landen in `results/<versuch>/`:
+
+- `bericht.md` mit Aufbau, Tabelle und Diagrammen;
+- `runs.csv` und, nicht eingecheckt, `timeseries.csv`;
+- SVG-Diagramme;
+- ein Manifest mit Parametern, Saaten und Code-Stand.
+
+Weil die Simulation deterministisch ist, erzeugt derselbe Aufruf auf demselben
+Code-Stand bitgenau dieselben Zahlen.
+
+Zwei Dinge sind beim Auswerten wichtig:
+
+- **Artenzahlen hängen von der Artdefinition ab.** Die Artschwelle verändert
+  die Dynamik nicht (ein Test prüft das), wohl aber, wie viele Arten man zählt.
+  Die Versuche verwenden deshalb die *evolvierte Vielfalt* als primäre
+  Messgröße: den mittleren Erbgut-Abstand zwischen Tieren derselben
+  Gründerlinie.
+- **Ein Modell ist kein Ökosystem.** Ergebnisse zeigen, was in *diesem* Modell
+  passiert und welche Mechanismen ein Muster erzeugen können. Sie sind
+  Hypothesen für die Natur, keine Belege. Die Grenzen stehen in
+  [`MODELL.md`](MODELL.md#10-bekannte-grenzen).
+
 ## Dateien
 
 ```
@@ -95,12 +146,17 @@ src/detmath.js      exp, log, sin, cos, tanh, atan2 bitgenau in jeder Engine
 src/genome.js       Erbgut, Mutation, genetischer Abstand
 src/brain.js        das kleine neuronale Netz
 src/names.js        Gattungen und Epitheta
-src/world.js        die Simulation, ohne DOM
+src/world.js        die Simulation, ohne DOM; Parameter in PARAMS
+src/metrics.js      Messgrößen und CSV
 src/render.js       Zeichnung des Beckens
 src/charts.js       Bestandsdiagramm, Stammbaum, Gehirnansicht
 src/main.js         Schleife, Journal, Bedienung
 tools/build.mjs     bündelt alles zu dist/gezeitenbecken.html
 tools/probe.mjs     lässt eine Welt ohne Browser laufen und druckt den Verlauf
+tools/experiment.mjs  Versuchsläufer (parallel, mit Statistik und Bericht)
+tools/stats.mjs     Bootstrap, Permutationstests, Trend- und Höckertest
+experiments/        Versuchsdefinitionen
+results/            Ergebnisse der Versuche
 tests/              Node-Tests: Determinismus, Grenzen, Buchführung der Arten
 ```
 

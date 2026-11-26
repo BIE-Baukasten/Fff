@@ -130,6 +130,76 @@ export function drawPopulation(canvas, world) {
   ctx.fill();
 }
 
+function ticksFor(lo, hi, n = 3) {
+  if (!(hi > lo)) hi = lo + 1;
+  const step0 = (hi - lo) / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= step0);
+  const out = [];
+  for (let v = Math.floor(lo / step) * step; v <= hi + step * 1e-6; v += step) out.push(+v.toPrecision(10));
+  if (out.at(-1) < hi) out.push(+(out.at(-1) + step).toPrecision(10));
+  return out;
+}
+
+const deNum = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
+
+// Verlauf einer Messgröße über die Zeit.
+export function drawSeries(canvas, world, key) {
+  const { ctx, w, h } = prepCanvas(canvas);
+  const hist = world.history.filter((s) => s.m);
+  const pad = { l: 40, r: 10, t: 10, b: 20 };
+  const iw = w - pad.l - pad.r;
+  const ih = h - pad.t - pad.b;
+  if (hist.length < 2 || iw < 20) return;
+  const vals = hist.map((s) => s.m[key]);
+  const ticks = ticksFor(Math.min(0, ...vals), Math.max(...vals) * 1.05 || 1);
+  const lo = ticks[0];
+  const hi = ticks.at(-1);
+  const t0 = hist[0].t;
+  const t1 = Math.max(hist.at(-1).t, t0 + DAY);
+  const X = (t) => pad.l + ((t - t0) / (t1 - t0)) * iw;
+  const Y = (v) => pad.t + ih - ((v - lo) / (hi - lo)) * ih;
+
+  ctx.font = MONO;
+  ctx.strokeStyle = GRID;
+  ctx.fillStyle = MUTED;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (const v of ticks) {
+    const y = Math.round(Y(v)) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(w - pad.r, y);
+    ctx.stroke();
+    ctx.fillText(deNum.format(v), pad.l - 6, y);
+  }
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const days = (t1 - t0) / DAY;
+  const step = days <= 8 ? 1 : days <= 20 ? 2 : days <= 50 ? 5 : days <= 120 ? 10 : 25;
+  for (let d = Math.ceil(t0 / DAY / step) * step; d <= t1 / DAY; d += step) {
+    const x = X(d * DAY);
+    if (x > pad.l + 4) ctx.fillText(`T${d + 1}`, x, h - pad.b + 5);
+  }
+
+  ctx.beginPath();
+  hist.forEach((s, i) => (i ? ctx.lineTo(X(s.t), Y(vals[i])) : ctx.moveTo(X(s.t), Y(vals[i]))));
+  ctx.lineTo(X(hist.at(-1).t), Y(lo));
+  ctx.lineTo(X(hist[0].t), Y(lo));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(240, 180, 94, 0.14)';
+  ctx.fill();
+  ctx.beginPath();
+  hist.forEach((s, i) => (i ? ctx.lineTo(X(s.t), Y(vals[i])) : ctx.moveTo(X(s.t), Y(vals[i]))));
+  ctx.strokeStyle = '#f0b45e';
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.fillStyle = INK;
+  ctx.beginPath();
+  ctx.arc(X(hist.at(-1).t), Y(vals.at(-1)), 2.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 // Ordnet benannte Arten als Baum: jedes Kind direkt unter seinem Elternteil.
 export function treeRows(world) {
   const est = [...world.clades.values()].filter((c) => c.established);

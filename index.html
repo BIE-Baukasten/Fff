@@ -252,6 +252,28 @@ button { cursor: pointer; }
 .legend i.tick { width: 0; height: 0; border: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 6px solid var(--lantern); vertical-align: 1px; }
 .legend i.area { height: 8px; border: 0; border-radius: 2px; background: linear-gradient(90deg, hsl(200 55% 52%), hsl(30 55% 52%)); vertical-align: 0; }
 
+/* Messwerte und Versuchsaufbau */
+.metric-pick { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--mist); }
+.metric-pick select, .params input[type="number"] {
+  background: var(--abyss);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font: 13px var(--body);
+  color: var(--foam);
+  min-width: 0;
+}
+.metric-pick select { flex: 1; }
+.params { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 8px 12px; align-items: center; font-size: 13px; }
+.params label { color: var(--foam); }
+.params label small { display: block; color: var(--mist); font-size: 11.5px; }
+.params input[type="number"] { font-family: var(--mono); font-variant-numeric: tabular-nums; width: 100%; }
+.params .check { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; }
+.params .check input { accent-color: var(--lantern); width: 16px; height: 16px; }
+.params .actions { grid-column: 1 / -1; margin-top: 4px; }
+.csv { width: 100%; height: 120px; background: var(--abyss); color: var(--foam); border: 1px solid var(--line); border-radius: 8px; font: 11px var(--mono); padding: 8px; }
+code { font: 12px var(--mono); color: var(--foam); }
+
 /* Chronik */
 .chronicle { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
 .chronicle li { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 10px; font-size: 13.5px; line-height: 1.45; }
@@ -349,14 +371,51 @@ button { cursor: pointer; }
       </div>
     </section>
 
+    <section class="panel" id="measurePanel">
+      <h2>Messwerte <span class="eyebrow" id="measureDay"></span></h2>
+      <dl class="stats" id="metricGrid"></dl>
+      <div class="metric-pick">
+        <label for="metricSelect">Verlauf von</label>
+        <select id="metricSelect"></select>
+      </div>
+      <canvas class="chart" id="metricChart"></canvas>
+      <p class="note" id="metricNote"></p>
+      <div class="actions">
+        <button class="btn" type="button" id="copyCsv">Messreihe kopieren (CSV)</button>
+      </div>
+      <textarea id="csvFallback" class="csv" readonly hidden aria-label="Messreihe als CSV"></textarea>
+    </section>
+
+    <section class="panel">
+      <h2>Versuchsaufbau <span class="eyebrow" id="paramDiff"></span></h2>
+      <form id="paramForm" class="params">
+        <label class="check" for="pPredation"><input type="checkbox" id="pPredation"> Angriffe wirken (Räuber möglich)</label>
+        <label for="pImmigration">Einwanderung bis Tag <small>leer = immer</small></label>
+        <input id="pImmigration" type="number" min="0" step="1" inputmode="numeric">
+        <label for="pGrowth">Algenwachstum</label>
+        <input id="pGrowth" type="number" min="0.001" max="0.03" step="0.0005" inputmode="decimal">
+        <label for="pMutation">Mutationsfaktor</label>
+        <input id="pMutation" type="number" min="0" max="5" step="0.1" inputmode="decimal">
+        <label for="pDisturbEvery">Sturm alle … Tage <small>0 = nie</small></label>
+        <input id="pDisturbEvery" type="number" min="0" step="0.5" inputmode="decimal">
+        <label for="pDisturbStrength">Sturm tötet Anteil</label>
+        <input id="pDisturbStrength" type="number" min="0" max="1" step="0.05" inputmode="decimal">
+        <label for="pSpeciation">Artschwelle <small>ändert nur die Zählung</small></label>
+        <input id="pSpeciation" type="number" min="0.5" max="10" step="0.1" inputmode="decimal">
+        <div class="actions"><button class="btn primary" type="submit">Neu säen mit diesen Werten</button><button class="btn" type="button" id="paramReset">Standardwerte</button></div>
+      </form>
+      <p class="note">Gleiche Saat und gleiche Werte ergeben in jedem Browser dieselbe Welt; Füttern und Eingriffe zählen nicht dazu. Versuche mit vielen Saaten und Statistik rechnet <code>tools/experiment.mjs</code>.</p>
+    </section>
+
     <section class="panel">
       <h2>Eingriffe</h2>
       <div class="actions" id="interventions">
         <button class="btn" type="button" data-intervene="bloom">Algenblüte</button>
         <button class="btn" type="button" data-intervene="murk">Trübung</button>
         <button class="btn" type="button" data-intervene="current">Strömung</button>
+        <button class="btn" type="button" data-intervene="storm">Sturm</button>
       </div>
-      <p class="note">Wie reagieren die Arten auf Überfluss, auf einen Tag ohne Licht, auf plötzliche Nachbarn? Jeder Eingriff landet in der Chronik.</p>
+      <p class="note">Wie reagieren die Arten auf Überfluss, auf einen Tag ohne Licht, auf plötzliche Nachbarn, auf den Verlust der Hälfte aller Tiere? Jeder Eingriff landet in der Chronik.</p>
     </section>
 
     <section class="panel">
