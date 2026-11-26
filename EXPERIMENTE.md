@@ -1,6 +1,6 @@
 # Versuche im Gezeitenbecken
 
-Vier Versuche und eine Replikation (240 Läufe, je 60 Tage), alle mit `tools/experiment.mjs` gerechnet
+Vier Versuche und eine Replikation (216 Läufe à 60 Tage), alle mit `tools/experiment.mjs` gerechnet
 und vollständig reproduzierbar. Die Rohdaten, Diagramme und Einzelberichte
 stehen in `results/<versuch>/`, das Modell ist in [`MODELL.md`](MODELL.md)
 beschrieben.
