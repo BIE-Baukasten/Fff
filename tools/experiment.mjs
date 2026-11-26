@@ -51,6 +51,7 @@ async function main() {
   const exp = JSON.parse(readFileSync(file, 'utf8'));
   const { PARAMS } = await import('../src/world.js');
   const { METRICS, toCsv } = await import('../src/metrics.js');
+  csvField = (await import('../src/metrics.js')).csvField;
   const S = await import('./stats.mjs');
 
   const cfg = {
@@ -192,8 +193,10 @@ async function main() {
 
 // ---------- Helfer ----------
 
+let csvField = String; // wird in main() durch die RFC-4180-Fassung aus metrics.js ersetzt
+
 function fmt(v, digits = 4) {
-  if (typeof v !== 'number') return String(v);
+  if (typeof v !== 'number') return csvField(v);
   if (!Number.isFinite(v)) return 'NaN';
   if (Number.isInteger(v)) return String(v);
   return v.toPrecision(digits);

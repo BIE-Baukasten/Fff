@@ -1,0 +1,173 @@
+<title>Gezeitenbecken-Versuche</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap">
+<style>
+/* Layout: ein Laborbericht in einer Spalte; jedes Experiment ein Abschnitt mit Urteil, Diagramm und Zahlen. */
+:root {
+  --paper: #f5f8f7;
+  --sheet: #ffffff;
+  --ink: #13232a;
+  --muted: #5a6e73;
+  --rule: #d9e3e1;
+  --tide: #1f6f8b;
+  --amber: #b9741a;
+  --yes: #2d7a4c;
+  --no: #8a5a3c;
+  --ctl: #1f6f8b;
+  --s0: #1f6f8b; --s1: #b9741a; --s2: #2d8a6e; --s3: #a3476b; --s4: #6a55b5;
+  --display: "Newsreader", Georgia, serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #071219; --sheet: #0c1d26; --ink: #dbe8e4; --muted: #8fabad; --rule: #1d3a47;
+    --tide: #6cc3e0; --amber: #f0b45e; --yes: #6fcf97; --no: #e0a37a; --ctl: #6cc3e0;
+    --s0: #6cc3e0; --s1: #f0b45e; --s2: #5fcf98; --s3: #e58bb0; --s4: #a99bf0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #071219; --sheet: #0c1d26; --ink: #dbe8e4; --muted: #8fabad; --rule: #1d3a47;
+  --tide: #6cc3e0; --amber: #f0b45e; --yes: #6fcf97; --no: #e0a37a; --ctl: #6cc3e0;
+  --s0: #6cc3e0; --s1: #f0b45e; --s2: #5fcf98; --s3: #e58bb0; --s4: #a99bf0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 72px; display: flex; flex-direction: column; gap: 40px; }
+header { display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font: italic 500 clamp(34px, 6vw, 48px)/1.05 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
+h2 { margin: 0; font: 500 26px/1.2 var(--display); text-wrap: balance; }
+h3 { margin: 0; font: 600 13px var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0; max-width: 65ch; }
+.lede { font-size: 18px; color: var(--ink); }
+.muted { color: var(--muted); }
+em.sp { font-family: var(--display); }
+section { display: flex; flex-direction: column; gap: 16px; }
+section.exp { padding-top: 28px; border-top: 1px solid var(--rule); }
+.verdict { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font: 600 13px var(--body); padding: 4px 12px; border-radius: 999px; border: 1px solid currentColor; }
+.verdict::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.yes { color: var(--yes); } .no { color: var(--no); } .ctl { color: var(--ctl); }
+.summary { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+.summary table { width: 100%; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 14px; min-width: 100%; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 12px var(--body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.data td:not(:first-child), .data th:not(:first-child) { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.data tr.primary td { font-weight: 600; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+figcaption { font-size: 13px; color: var(--muted); }
+.plotwrap { overflow-x: auto; border-radius: 12px; }
+.plot { width: 100%; min-width: 540px; height: auto; display: block; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; }
+.plot .grid { stroke: var(--rule); stroke-width: 1; }
+.plot .tick, .plot .lvl { fill: var(--muted); font: 12px var(--mono); }
+.plot .lvl { fill: var(--ink); font-family: var(--body); font-size: 13px; }
+.plot .pair { fill: none; stroke: var(--muted); stroke-opacity: 0.25; stroke-width: 1; }
+.plot .dot { fill-opacity: 0.55; }
+.plot .s0 { fill: var(--s0); } .plot .s1 { fill: var(--s1); } .plot .s2 { fill: var(--s2); } .plot .s3 { fill: var(--s3); } .plot .s4 { fill: var(--s4); }
+.plot .ci { stroke: var(--ink); stroke-width: 2; }
+.plot .mean { fill: var(--ink); }
+.keyfig { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.keyfig div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.keyfig b { font: 500 22px var(--mono); font-variant-numeric: tabular-nums; }
+.keyfig span { font-size: 13px; color: var(--muted); }
+ul { margin: 0; padding-left: 20px; max-width: 65ch; display: flex; flex-direction: column; gap: 6px; }
+.note { font-size: 14px; color: var(--muted); }
+code { font: 13px var(--mono); }
+footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule); padding-top: 24px; }
+@media (max-width: 560px) { .keyfig { grid-template-columns: minmax(0, 1fr); } h2 { font-size: 23px; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Gezeitenbecken · 216 Läufe à 60 Tage</div>
+  <h1>Was im Becken geschieht, wenn man es befragt</h1>
+  <p class="lede">Vier Versuche und eine Replikation mit der Künstliches-Leben-Simulation Gezeitenbecken. Gemessen wird vor allem die <strong>evolvierte Vielfalt</strong>: der mittlere Erbgut-Abstand zwischen Tieren, die vom selben Gründer abstammen, also die Vielfalt, die im Becken durch Mutation entstanden ist.</p>
+  <p class="note">Die Ergebnisse gelten für dieses Modell: eine kleine Welt, ungeschlechtliche Vermehrung, eine einzige Nahrungsquelle, 30 bis 45 Generationen. Für echte Ökosysteme sind sie Hypothesen, keine Belege.</p>
+</header>
+
+<section>
+  <h3>Auf einen Blick</h3>
+  <div class="summary tbl"><table>
+    <thead><tr><th>Versuch</th><th>Frage</th><th>Ergebnis</th></tr></thead>
+    <tbody>
+      <tr><td>Artschwelle</td><td>Hängt die Artenzahl von der Definition ab?</td><td><span class="ctl">Kontrolle bestanden</span>: Artenzahl ×2,5, Dynamik identisch</td></tr>
+      <tr><td>Räuber</td><td>Erhöhen Räuber die Vielfalt?</td><td><span class="yes">Ja, repliziert</span>: +0,27 (p = 0,007, 36 Paare)</td></tr>
+      <tr><td>Störung</td><td>Vielfalt am größten bei mittlerer Störung?</td><td><span class="no">Nein</span>: kein Höcker (p = 0,176)</td></tr>
+      <tr><td>Produktivität</td><td>Vielfalt am größten bei mittlerer Produktivität?</td><td><span class="no">Nein</span>: stattdessen stetiger Anstieg (ρ = 0,25)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="exp">
+  <span class="verdict yes">Hypothese gestützt, in Replikation bestätigt</span>
+  <h2>Räuber erhöhen die Vielfalt und lösen eine trophische Kaskade aus</h2>
+  <p>Ein Schalter macht den Angriffsausgang der Gehirne wirkungslos. Alles andere bleibt gleich. Erst 12 Saaten (+0,25, p = 0,056), dann eine vorab festgelegte Replikation mit 24 neuen Saaten (+0,28, p = 0,043).</p>
+  <div class="keyfig">
+    <div><b>+0,27</b><span>evolvierte Vielfalt mit Räubern, 26 von 36 Saaten höher</span></div>
+    <div><b>+0,65</b><span>mittlere Körpergröße: Größe schützt vor Angriffen</span></div>
+    <div><b>+16 %</b><span>mehr Algen bleiben übrig, weil Räuber die Grasenden kurz halten</span></div>
+  </div>
+  <figure>
+    <div class="plotwrap"><svg viewBox="0 0 640 230" class="plot" role="img" aria-label="evolvedDiv je Stufe"><line class="grid" x1="46" x2="626" y1="192.6" y2="192.6"/><text class="tick" x="38" y="196.6" text-anchor="end">2,00</text><line class="grid" x1="46" x2="626" y1="153.8" y2="153.8"/><text class="tick" x="38" y="157.8" text-anchor="end">2,50</text><line class="grid" x1="46" x2="626" y1="115.0" y2="115.0"/><text class="tick" x="38" y="119.0" text-anchor="end">3,00</text><line class="grid" x1="46" x2="626" y1="76.2" y2="76.2"/><text class="tick" x="38" y="80.2" text-anchor="end">3,50</text><line class="grid" x1="46" x2="626" y1="37.3" y2="37.3"/><text class="tick" x="38" y="41.3" text-anchor="end">4,00</text><polyline class="pair" points="191.0,130.2 481.0,120.9"/><polyline class="pair" points="191.0,143.2 481.0,144.2"/><polyline class="pair" points="191.0,69.7 481.0,159.2"/><polyline class="pair" points="191.0,155.4 481.0,87.3"/><polyline class="pair" points="191.0,167.5 481.0,64.7"/><polyline class="pair" points="191.0,149.7 481.0,92.5"/><polyline class="pair" points="191.0,101.0 481.0,94.6"/><polyline class="pair" points="191.0,135.1 481.0,114.2"/><polyline class="pair" points="191.0,103.5 481.0,24.7"/><polyline class="pair" points="191.0,85.9 481.0,101.6"/><polyline class="pair" points="191.0,183.3 481.0,76.8"/><polyline class="pair" points="191.0,110.6 481.0,100.9"/><polyline class="pair" points="191.0,94.6 481.0,83.2"/><polyline class="pair" points="191.0,159.9 481.0,180.1"/><polyline class="pair" points="191.0,149.7 481.0,118.7"/><polyline class="pair" points="191.0,152.6 481.0,70.5"/><polyline class="pair" points="191.0,120.0 481.0,122.4"/><polyline class="pair" points="191.0,100.1 481.0,56.7"/><polyline class="pair" points="191.0,149.5 481.0,125.5"/><polyline class="pair" points="191.0,174.0 481.0,176.6"/><polyline class="pair" points="191.0,102.8 481.0,96.5"/><polyline class="pair" points="191.0,70.2 481.0,95.4"/><polyline class="pair" points="191.0,94.3 481.0,160.0"/><polyline class="pair" points="191.0,179.7 481.0,89.3"/><circle class="dot s0" cx="183.2" cy="130.2" r="3"/><circle class="dot s0" cx="185.8" cy="143.2" r="3"/><circle class="dot s0" cx="188.4" cy="69.7" r="3"/><circle class="dot s0" cx="191.0" cy="155.4" r="3"/><circle class="dot s0" cx="193.6" cy="167.5" r="3"/><circle class="dot s0" cx="196.2" cy="149.7" r="3"/><circle class="dot s0" cx="198.8" cy="101.0" r="3"/><circle class="dot s0" cx="183.2" cy="135.1" r="3"/><circle class="dot s0" cx="185.8" cy="103.5" r="3"/><circle class="dot s0" cx="188.4" cy="85.9" r="3"/><circle class="dot s0" cx="191.0" cy="183.3" r="3"/><circle class="dot s0" cx="193.6" cy="110.6" r="3"/><circle class="dot s0" cx="196.2" cy="94.6" r="3"/><circle class="dot s0" cx="198.8" cy="159.9" r="3"/><circle class="dot s0" cx="183.2" cy="149.7" r="3"/><circle class="dot s0" cx="185.8" cy="152.6" r="3"/><circle class="dot s0" cx="188.4" cy="120.0" r="3"/><circle class="dot s0" cx="191.0" cy="100.1" r="3"/><circle class="dot s0" cx="193.6" cy="149.5" r="3"/><circle class="dot s0" cx="196.2" cy="174.0" r="3"/><circle class="dot s0" cx="198.8" cy="102.8" r="3"/><circle class="dot s0" cx="183.2" cy="70.2" r="3"/><circle class="dot s0" cx="185.8" cy="94.3" r="3"/><circle class="dot s0" cx="188.4" cy="179.7" r="3"/><line class="ci" x1="191" x2="191" y1="141.5" y2="114.9"/><rect class="mean" x="176" y="126.4" width="30" height="4" rx="1"/><text class="lvl" x="191" y="220" text-anchor="middle">ohne Räuber</text><circle class="dot s1" cx="473.2" cy="120.9" r="3"/><circle class="dot s1" cx="475.8" cy="144.2" r="3"/><circle class="dot s1" cx="478.4" cy="159.2" r="3"/><circle class="dot s1" cx="481.0" cy="87.3" r="3"/><circle class="dot s1" cx="483.6" cy="64.7" r="3"/><circle class="dot s1" cx="486.2" cy="92.5" r="3"/><circle class="dot s1" cx="488.8" cy="94.6" r="3"/><circle class="dot s1" cx="473.2" cy="114.2" r="3"/><circle class="dot s1" cx="475.8" cy="24.7" r="3"/><circle class="dot s1" cx="478.4" cy="101.6" r="3"/><circle class="dot s1" cx="481.0" cy="76.8" r="3"/><circle class="dot s1" cx="483.6" cy="100.9" r="3"/><circle class="dot s1" cx="486.2" cy="83.2" r="3"/><circle class="dot s1" cx="488.8" cy="180.1" r="3"/><circle class="dot s1" cx="473.2" cy="118.7" r="3"/><circle class="dot s1" cx="475.8" cy="70.5" r="3"/><circle class="dot s1" cx="478.4" cy="122.4" r="3"/><circle class="dot s1" cx="481.0" cy="56.7" r="3"/><circle class="dot s1" cx="483.6" cy="125.5" r="3"/><circle class="dot s1" cx="486.2" cy="176.6" r="3"/><circle class="dot s1" cx="488.8" cy="96.5" r="3"/><circle class="dot s1" cx="473.2" cy="95.4" r="3"/><circle class="dot s1" cx="475.8" cy="160.0" r="3"/><circle class="dot s1" cx="478.4" cy="89.3" r="3"/><line class="ci" x1="481" x2="481" y1="121.2" y2="92.0"/><rect class="mean" x="466" y="104.5" width="30" height="4" rx="1"/><text class="lvl" x="481" y="220" text-anchor="middle">mit Räubern</text></svg></div>
+    <figcaption>Replikation, evolvierte Vielfalt im Mittel der Tage 40 bis 60. Punkte: einzelne Saaten, Linien verbinden dieselbe Saat; Balken: Mittelwert mit 95-%-Intervall.</figcaption>
+  </figure>
+  <p>Die Algen-Wirkung ist das Muster einer <strong>trophischen Kaskade</strong>: Die oberste Ebene der Nahrungskette entlastet die unterste. Keine Regel im Modell schreibt das vor; es entsteht. Welcher Mechanismus die höhere Vielfalt erzeugt, bleibt offen.</p>
+  <p class="note">Gepoolt über beide Versuche, Vorzeichen-Permutationstest: Vielfalt 0,27 [0,09; 0,44], p = 0,007; Größe 0,65 [0,34; 0,95], p < 0,001; Algen p < 0,001. Holm-korrigiert über alle acht Messgrößen ist der Vielfaltseffekt der Replikation allein nicht signifikant (p = 0,142).</p>
+</section>
+
+<section class="exp">
+  <span class="verdict no">Hypothese nicht gestützt</span>
+  <h2>Störung: kein Höcker, aber kleinere Tiere</h2>
+  <p>Ein Sturm tötet jedes Tier mit 50 % Wahrscheinlichkeit, unabhängig von seinem Zustand. Die <em>Intermediate Disturbance Hypothesis</em> sagt bei mittlerer Häufigkeit die größte Vielfalt voraus. Der vorab festgelegte Höckertest findet das nicht (p = 0,176).</p>
+  <figure>
+    <div class="plotwrap"><svg viewBox="0 0 640 230" class="plot" role="img" aria-label="sizeMean je Stufe"><line class="grid" x1="46" x2="626" y1="183.3" y2="183.3"/><text class="tick" x="38" y="187.3" text-anchor="end">0</text><line class="grid" x1="46" x2="626" y1="130.8" y2="130.8"/><text class="tick" x="38" y="134.8" text-anchor="end">2</text><line class="grid" x1="46" x2="626" y1="78.2" y2="78.2"/><text class="tick" x="38" y="82.2" text-anchor="end">4</text><line class="grid" x1="46" x2="626" y1="25.7" y2="25.7"/><text class="tick" x="38" y="29.7" text-anchor="end">6</text><polyline class="pair" points="104.0,71.3 220.0,24.7 336.0,37.4 452.0,65.6 568.0,82.1"/><polyline class="pair" points="104.0,93.0 220.0,86.0 336.0,86.2 452.0,88.1 568.0,94.4"/><polyline class="pair" points="104.0,80.9 220.0,83.8 336.0,92.8 452.0,90.3 568.0,94.4"/><polyline class="pair" points="104.0,60.1 220.0,42.5 336.0,53.5 452.0,59.9 568.0,95.0"/><polyline class="pair" points="104.0,81.2 220.0,88.3 336.0,82.9 452.0,89.1 568.0,96.0"/><polyline class="pair" points="104.0,91.8 220.0,79.9 336.0,90.3 452.0,89.6 568.0,96.1"/><polyline class="pair" points="104.0,86.1 220.0,81.7 336.0,86.5 452.0,94.1 568.0,90.6"/><polyline class="pair" points="104.0,90.3 220.0,53.4 336.0,82.5 452.0,91.0 568.0,92.8"/><polyline class="pair" points="104.0,69.2 220.0,75.5 336.0,45.5 452.0,84.7 568.0,91.9"/><polyline class="pair" points="104.0,87.7 220.0,85.2 336.0,89.8 452.0,94.4 568.0,95.9"/><polyline class="pair" points="104.0,62.9 220.0,66.0 336.0,75.1 452.0,48.5 568.0,183.3"/><polyline class="pair" points="104.0,33.5 220.0,50.7 336.0,82.3 452.0,75.6 568.0,92.6"/><circle class="dot s0" cx="96.2" cy="71.3" r="3"/><circle class="dot s0" cx="98.8" cy="93.0" r="3"/><circle class="dot s0" cx="101.4" cy="80.9" r="3"/><circle class="dot s0" cx="104.0" cy="60.1" r="3"/><circle class="dot s0" cx="106.6" cy="81.2" r="3"/><circle class="dot s0" cx="109.2" cy="91.8" r="3"/><circle class="dot s0" cx="111.8" cy="86.1" r="3"/><circle class="dot s0" cx="96.2" cy="90.3" r="3"/><circle class="dot s0" cx="98.8" cy="69.2" r="3"/><circle class="dot s0" cx="101.4" cy="87.7" r="3"/><circle class="dot s0" cx="104.0" cy="62.9" r="3"/><circle class="dot s0" cx="106.6" cy="33.5" r="3"/><line class="ci" x1="104" x2="104" y1="84.2" y2="65.5"/><rect class="mean" x="89" y="73.7" width="30" height="4" rx="1"/><text class="lvl" x="104" y="220" text-anchor="middle">nie</text><circle class="dot s1" cx="212.2" cy="24.7" r="3"/><circle class="dot s1" cx="214.8" cy="86.0" r="3"/><circle class="dot s1" cx="217.4" cy="83.8" r="3"/><circle class="dot s1" cx="220.0" cy="42.5" r="3"/><circle class="dot s1" cx="222.6" cy="88.3" r="3"/><circle class="dot s1" cx="225.2" cy="79.9" r="3"/><circle class="dot s1" cx="227.8" cy="81.7" r="3"/><circle class="dot s1" cx="212.2" cy="53.4" r="3"/><circle class="dot s1" cx="214.8" cy="75.5" r="3"/><circle class="dot s1" cx="217.4" cy="85.2" r="3"/><circle class="dot s1" cx="220.0" cy="66.0" r="3"/><circle class="dot s1" cx="222.6" cy="50.7" r="3"/><line class="ci" x1="220" x2="220" y1="78.5" y2="56.7"/><rect class="mean" x="205" y="66.1" width="30" height="4" rx="1"/><text class="lvl" x="220" y="220" text-anchor="middle">alle 8 Tage</text><circle class="dot s2" cx="328.2" cy="37.4" r="3"/><circle class="dot s2" cx="330.8" cy="86.2" r="3"/><circle class="dot s2" cx="333.4" cy="92.8" r="3"/><circle class="dot s2" cx="336.0" cy="53.5" r="3"/><circle class="dot s2" cx="338.6" cy="82.9" r="3"/><circle class="dot s2" cx="341.2" cy="90.3" r="3"/><circle class="dot s2" cx="343.8" cy="86.5" r="3"/><circle class="dot s2" cx="328.2" cy="82.5" r="3"/><circle class="dot s2" cx="330.8" cy="45.5" r="3"/><circle class="dot s2" cx="333.4" cy="89.8" r="3"/><circle class="dot s2" cx="336.0" cy="75.1" r="3"/><circle class="dot s2" cx="338.6" cy="82.3" r="3"/><line class="ci" x1="336" x2="336" y1="84.7" y2="64.5"/><rect class="mean" x="321" y="73.4" width="30" height="4" rx="1"/><text class="lvl" x="336" y="220" text-anchor="middle">alle 4 Tage</text><circle class="dot s3" cx="444.2" cy="65.6" r="3"/><circle class="dot s3" cx="446.8" cy="88.1" r="3"/><circle class="dot s3" cx="449.4" cy="90.3" r="3"/><circle class="dot s3" cx="452.0" cy="59.9" r="3"/><circle class="dot s3" cx="454.6" cy="89.1" r="3"/><circle class="dot s3" cx="457.2" cy="89.6" r="3"/><circle class="dot s3" cx="459.8" cy="94.1" r="3"/><circle class="dot s3" cx="444.2" cy="91.0" r="3"/><circle class="dot s3" cx="446.8" cy="84.7" r="3"/><circle class="dot s3" cx="449.4" cy="94.4" r="3"/><circle class="dot s3" cx="452.0" cy="48.5" r="3"/><circle class="dot s3" cx="454.6" cy="75.6" r="3"/><line class="ci" x1="452" x2="452" y1="88.3" y2="72.4"/><rect class="mean" x="437" y="78.9" width="30" height="4" rx="1"/><text class="lvl" x="452" y="220" text-anchor="middle">alle 2 Tage</text><circle class="dot s4" cx="560.2" cy="82.1" r="3"/><circle class="dot s4" cx="562.8" cy="94.4" r="3"/><circle class="dot s4" cx="565.4" cy="94.4" r="3"/><circle class="dot s4" cx="568.0" cy="95.0" r="3"/><circle class="dot s4" cx="570.6" cy="96.0" r="3"/><circle class="dot s4" cx="573.2" cy="96.1" r="3"/><circle class="dot s4" cx="575.8" cy="90.6" r="3"/><circle class="dot s4" cx="560.2" cy="92.8" r="3"/><circle class="dot s4" cx="562.8" cy="91.9" r="3"/><circle class="dot s4" cx="565.4" cy="95.9" r="3"/><circle class="dot s4" cx="568.0" cy="183.3" r="3"/><circle class="dot s4" cx="570.6" cy="92.6" r="3"/><line class="ci" x1="568" x2="568" y1="116.4" y2="91.1"/><rect class="mean" x="553" y="98.4" width="30" height="4" rx="1"/><text class="lvl" x="568" y="220" text-anchor="middle">täglich</text></svg></div>
+    <figcaption>Mittlere Körpergröße je Störungshäufigkeit (ρ = −0,52, p < 0,001). Wo der Tod zufällig und häufig kommt, gewinnt, wer sich früh teilt.</figcaption>
+  </figure>
+  <div class="tbl"><table class="data">
+    <thead><tr><th>Messgröße</th><th>nie</th><th>alle 8 Tage</th><th>alle 4 Tage</th><th>alle 2 Tage</th><th>täglich</th></tr></thead>
+    <tbody>
+      <tr class="primary"><td>evolvierte Vielfalt</td><td>3,05</td><td>3,17</td><td>3,13</td><td>3,30</td><td>2,90</td></tr>
+      <tr><td>effektive Arten</td><td>7,2</td><td>8,2</td><td>8,7</td><td>10,9</td><td>12,8</td></tr>
+      <tr><td>Größe ⌀</td><td>4,10</td><td>4,38</td><td>4,11</td><td>3,90</td><td>3,15</td></tr>
+    </tbody>
+  </table></div>
+  <p>Die gezählten Arten steigen mit der Störung stark, die Vielfalt nicht. Störung verdoppelt die Geburten, und mehr Geburten erzeugen mehr Linien, die die Artschwelle überschreiten.</p>
+</section>
+
+<section class="exp">
+  <span class="verdict no">Hypothese nicht gestützt</span>
+  <h2>Produktivität: mehr Futter, mehr Vielfalt, mehr Jäger</h2>
+  <p>Statt eines Höckers steigt die evolvierte Vielfalt stetig mit der Algenwachstumsrate (ρ = 0,25, p (Holm) = 0,021). Größere Populationen halten mehr Variation; ob die Produktivität nur über die Bestandsgröße wirkt, trennt dieser Versuch nicht.</p>
+  <figure>
+    <div class="plotwrap"><svg viewBox="0 0 640 230" class="plot" role="img" aria-label="evolvedDiv je Stufe"><line class="grid" x1="46" x2="626" y1="181.3" y2="181.3"/><text class="tick" x="38" y="185.3" text-anchor="end">2</text><line class="grid" x1="46" x2="626" y1="120.8" y2="120.8"/><text class="tick" x="38" y="124.8" text-anchor="end">3</text><line class="grid" x1="46" x2="626" y1="60.4" y2="60.4"/><text class="tick" x="38" y="64.4" text-anchor="end">4</text><polyline class="pair" points="104.0,159.1 220.0,93.2 336.0,62.2 452.0,111.5 568.0,60.2"/><polyline class="pair" points="104.0,160.0 220.0,142.7 336.0,148.7 452.0,125.0 568.0,76.4"/><polyline class="pair" points="104.0,164.1 220.0,183.3 336.0,158.5 452.0,134.0 568.0,156.6"/><polyline class="pair" points="104.0,112.8 220.0,81.9 336.0,104.0 452.0,96.4 568.0,24.7"/><polyline class="pair" points="104.0,143.5 220.0,113.9 336.0,113.6 452.0,119.2 568.0,124.6"/><polyline class="pair" points="104.0,147.3 220.0,164.1 336.0,158.1 452.0,183.1 568.0,153.1"/><polyline class="pair" points="104.0,103.7 220.0,86.3 336.0,83.5 452.0,108.2 568.0,76.1"/><polyline class="pair" points="104.0,96.7 220.0,85.9 336.0,133.5 452.0,84.9 568.0,120.6"/><polyline class="pair" points="104.0,125.3 220.0,135.5 336.0,111.9 452.0,124.7 568.0,80.3"/><polyline class="pair" points="104.0,99.1 220.0,166.4 336.0,136.6 452.0,140.5 568.0,155.4"/><polyline class="pair" points="104.0,115.9 220.0,111.3 336.0,99.7 452.0,133.1 568.0,100.4"/><polyline class="pair" points="104.0,161.0 220.0,144.4 336.0,123.2 452.0,101.8 568.0,133.4"/><circle class="dot s0" cx="96.2" cy="159.1" r="3"/><circle class="dot s0" cx="98.8" cy="160.0" r="3"/><circle class="dot s0" cx="101.4" cy="164.1" r="3"/><circle class="dot s0" cx="104.0" cy="112.8" r="3"/><circle class="dot s0" cx="106.6" cy="143.5" r="3"/><circle class="dot s0" cx="109.2" cy="147.3" r="3"/><circle class="dot s0" cx="111.8" cy="103.7" r="3"/><circle class="dot s0" cx="96.2" cy="96.7" r="3"/><circle class="dot s0" cx="98.8" cy="125.3" r="3"/><circle class="dot s0" cx="101.4" cy="99.1" r="3"/><circle class="dot s0" cx="104.0" cy="115.9" r="3"/><circle class="dot s0" cx="106.6" cy="161.0" r="3"/><line class="ci" x1="104" x2="104" y1="146.6" y2="118.1"/><rect class="mean" x="89" y="130.4" width="30" height="4" rx="1"/><text class="lvl" x="104" y="220" text-anchor="middle">0,0040</text><circle class="dot s1" cx="212.2" cy="93.2" r="3"/><circle class="dot s1" cx="214.8" cy="142.7" r="3"/><circle class="dot s1" cx="217.4" cy="183.3" r="3"/><circle class="dot s1" cx="220.0" cy="81.9" r="3"/><circle class="dot s1" cx="222.6" cy="113.9" r="3"/><circle class="dot s1" cx="225.2" cy="164.1" r="3"/><circle class="dot s1" cx="227.8" cy="86.3" r="3"/><circle class="dot s1" cx="212.2" cy="85.9" r="3"/><circle class="dot s1" cx="214.8" cy="135.5" r="3"/><circle class="dot s1" cx="217.4" cy="166.4" r="3"/><circle class="dot s1" cx="220.0" cy="111.3" r="3"/><circle class="dot s1" cx="222.6" cy="144.4" r="3"/><line class="ci" x1="220" x2="220" y1="144.7" y2="107.1"/><rect class="mean" x="205" y="123.7" width="30" height="4" rx="1"/><text class="lvl" x="220" y="220" text-anchor="middle">0,0050</text><circle class="dot s2" cx="328.2" cy="62.2" r="3"/><circle class="dot s2" cx="330.8" cy="148.7" r="3"/><circle class="dot s2" cx="333.4" cy="158.5" r="3"/><circle class="dot s2" cx="336.0" cy="104.0" r="3"/><circle class="dot s2" cx="338.6" cy="113.6" r="3"/><circle class="dot s2" cx="341.2" cy="158.1" r="3"/><circle class="dot s2" cx="343.8" cy="83.5" r="3"/><circle class="dot s2" cx="328.2" cy="133.5" r="3"/><circle class="dot s2" cx="330.8" cy="111.9" r="3"/><circle class="dot s2" cx="333.4" cy="136.6" r="3"/><circle class="dot s2" cx="336.0" cy="99.7" r="3"/><circle class="dot s2" cx="338.6" cy="123.2" r="3"/><line class="ci" x1="336" x2="336" y1="135.2" y2="103.7"/><rect class="mean" x="321" y="117.5" width="30" height="4" rx="1"/><text class="lvl" x="336" y="220" text-anchor="middle">0,0065</text><circle class="dot s3" cx="444.2" cy="111.5" r="3"/><circle class="dot s3" cx="446.8" cy="125.0" r="3"/><circle class="dot s3" cx="449.4" cy="134.0" r="3"/><circle class="dot s3" cx="452.0" cy="96.4" r="3"/><circle class="dot s3" cx="454.6" cy="119.2" r="3"/><circle class="dot s3" cx="457.2" cy="183.1" r="3"/><circle class="dot s3" cx="459.8" cy="108.2" r="3"/><circle class="dot s3" cx="444.2" cy="84.9" r="3"/><circle class="dot s3" cx="446.8" cy="124.7" r="3"/><circle class="dot s3" cx="449.4" cy="140.5" r="3"/><circle class="dot s3" cx="452.0" cy="133.1" r="3"/><circle class="dot s3" cx="454.6" cy="101.8" r="3"/><line class="ci" x1="452" x2="452" y1="136.6" y2="109.3"/><rect class="mean" x="437" y="119.9" width="30" height="4" rx="1"/><text class="lvl" x="452" y="220" text-anchor="middle">0,0080</text><circle class="dot s4" cx="560.2" cy="60.2" r="3"/><circle class="dot s4" cx="562.8" cy="76.4" r="3"/><circle class="dot s4" cx="565.4" cy="156.6" r="3"/><circle class="dot s4" cx="568.0" cy="24.7" r="3"/><circle class="dot s4" cx="570.6" cy="124.6" r="3"/><circle class="dot s4" cx="573.2" cy="153.1" r="3"/><circle class="dot s4" cx="575.8" cy="76.1" r="3"/><circle class="dot s4" cx="560.2" cy="120.6" r="3"/><circle class="dot s4" cx="562.8" cy="80.3" r="3"/><circle class="dot s4" cx="565.4" cy="155.4" r="3"/><circle class="dot s4" cx="568.0" cy="100.4" r="3"/><circle class="dot s4" cx="570.6" cy="133.4" r="3"/><line class="ci" x1="568" x2="568" y1="127.1" y2="82.3"/><rect class="mean" x="553" y="103.2" width="30" height="4" rx="1"/><text class="lvl" x="568" y="220" text-anchor="middle">0,0100</text></svg></div>
+    <figcaption>Evolvierte Vielfalt je Algenwachstumsrate.</figcaption>
+  </figure>
+  <p>Der Anteil der Tiere, die schon gejagt haben, steigt von 5 % auf 11 %: Produktivere Systeme tragen mehr Räuber.</p>
+</section>
+
+<section class="exp">
+  <span class="verdict ctl">Kontrollversuch bestanden</span>
+  <h2>Gezählte Arten täuschen</h2>
+  <p>Die Artschwelle legt fest, ab wann eine Linie als neue Art zählt. Sie ist reine Beobachtung. Auf allen vier Stufen laufen die Welten bitgenau gleich; nur die Zählung ändert sich.</p>
+  <div class="tbl"><table class="data">
+    <thead><tr><th>Artschwelle</th><th>2,0</th><th>2,5</th><th>3,0</th><th>3,5</th></tr></thead>
+    <tbody>
+      <tr class="primary"><td>Artenzahl</td><td>19,85</td><td>15,41</td><td>9,34</td><td>7,96</td></tr><tr><td>effektive Arten</td><td>10,13</td><td>6,65</td><td>4,32</td><td>4,00</td></tr><tr><td>evolvierte Vielfalt</td><td>2,84</td><td>2,84</td><td>2,84</td><td>2,84</td></tr><tr><td>genetische Vielfalt</td><td>3,28</td><td>3,28</td><td>3,28</td><td>3,28</td></tr><tr><td>Tiere</td><td>569</td><td>569</td><td>569</td><td>569</td></tr>
+    </tbody>
+  </table></div>
+  <p>In allen drei ökologischen Versuchen liefen Artenzahl und evolvierte Vielfalt auseinander: Mit Räubern gab es weniger gezählte Arten, aber mehr Vielfalt. Wer mehr Tiere und mehr Geburten hat, zählt mehr Arten. Die Feldökologie kennt das Problem und vergleicht Artenzahlen deshalb nur bei gleicher Stichprobengröße.</p>
+</section>
+
+<footer>
+  <p>Methode: gepaarte Saaten (jede Saat auf jeder Stufe), Einwanderung nur bis Tag 10, Auswertung über die Tage 40 bis 60, Bootstrap-Intervalle, exakte Vorzeichen- und Blockpermutationstests, Holm-Korrektur. Modell nach ODD-Protokoll in <code>MODELL.md</code>, Auswertung in <code>EXPERIMENTE.md</code>, Rohdaten in <code>results/</code>.</p>
+  <p>Code-Stand <code>6046d10</code>. Jede Zahl ist mit <code>node tools/experiment.mjs experiments/&lt;versuch&gt;.json</code> bitgenau reproduzierbar; diese Seite entsteht mit <code>node tools/report-page.mjs</code>.</p>
+</footer>
+</div>

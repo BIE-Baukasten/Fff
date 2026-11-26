@@ -223,3 +223,13 @@ test('Messwerte sind vollständig und plausibel', async () => {
   assert.equal(csv.split('\n')[0].split(',').length, METRIC_KEYS.length + 1);
   assert.ok(w.history.at(-1).m.pop >= 0);
 });
+
+test('CSV: Felder mit Komma werden in Anführungszeichen gesetzt', async () => {
+  const { csvField, toCsv } = await import('../src/metrics.js');
+  assert.equal(csvField('0,0040'), '"0,0040"');
+  assert.equal(csvField('a"b'), '"a""b"');
+  assert.equal(csvField('x,"y"'), '"x,""y"""');
+  assert.equal(csvField(12), '12');
+  const line = toCsv([{}], { level: '2,5' }).split('\n')[1];
+  assert.ok(line.startsWith('"2,5",'));
+});

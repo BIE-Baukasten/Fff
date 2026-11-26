@@ -13,7 +13,7 @@ Dieser Versuch prüft die Messung, nicht die Ökologie. Er zeigt, warum die Haup
 | Dauer | 60 Tage, gemessen wird der Mittelwert über Tag 40 bis 60 |
 | Weitere Einstellungen | `immigrationUntil` = 10 |
 | Primäre Messgröße | Artenzahl (vorab festgelegt), alle übrigen explorativ |
-| Code-Stand | `6046d10`, Node v22.23.5, Rechenzeit 163 s |
+| Code-Stand | `eedbf6b (mit lokalen Änderungen in src/)`, Node v22.23.5, Rechenzeit 164 s |
 
 ## Ergebnisse
 

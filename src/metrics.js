@@ -150,8 +150,14 @@ export function geneticDiversity(cs, lineageOf = () => 0) {
 export function toCsv(rows, extra = {}) {
   const extraKeys = Object.keys(extra);
   const head = [...extraKeys, ...METRIC_KEYS].join(',');
-  const lines = rows.map((r) => [...extraKeys.map((k) => extra[k]), ...METRIC_KEYS.map((k) => fmt(r[k]))].join(','));
+  const lines = rows.map((r) => [...extraKeys.map((k) => csvField(extra[k])), ...METRIC_KEYS.map((k) => fmt(r[k]))].join(','));
   return [head, ...lines].join('\n') + '\n';
+}
+
+// Felder mit Komma, Anführungszeichen oder Zeilenumbruch in Anführungszeichen setzen (RFC 4180).
+export function csvField(v) {
+  const s = String(v);
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 function fmt(v) {
