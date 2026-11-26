@@ -56,7 +56,7 @@ export const DEFAULTS = {
   // learning
   gammaQ: 0.95, lrQ: 1e-3, hidden: 48, batch: 16, trainEvery: 4, replaySize: 6000, targetEvery: 400,
   betaQ: 2.5,
-  gammaPav: 0.96, lrPav: 0.06,
+  gammaPav: 0.96, lrPav: 0.12,
   // affect
   rewardScale: 12,
   painWeight: 1.6,

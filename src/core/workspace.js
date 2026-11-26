@@ -7,6 +7,11 @@
 import { codeFor, conjKey, CODE_DIM } from './codes.js';
 import { DEFAULTS } from './config.js';
 
+// temporal basis ("microstimuli", Ludvig, Sutton & Kehoe 2008) over a content's age
+const NB = 5, CENT = [1, 5, 10, 16, 25], WID = [2, 3, 4, 5, 8];
+export const TIME_DIM = CODE_DIM * NB;
+const basis = age => CENT.map((c, i) => Math.exp(-(((age - c) / WID[i]) ** 2)));
+
 export class Workspace {
   constructor(enabled = true, p = DEFAULTS) {
     this.enabled = enabled;
@@ -19,6 +24,8 @@ export class Workspace {
     this.ignitions = [];
     this.total = 0;
     this.lastInput = new Map();
+    this.age = new Map();     // ticks since a content became available (microstimulus clock)
+    this.gTime = new Float64Array(CODE_DIM * NB);
   }
 
   step(cands, bias = new Map()) {
@@ -41,6 +48,7 @@ export class Workspace {
       const norm = Math.max(1, s / 2);
       for (const k of this.contents) { const c = codeFor(k), v = this.a.get(k) / norm; for (let i = 0; i < CODE_DIM; i++) this.g[i] += v * c[i]; }
       this.total = s;
+      this._time(this.contents, k => this.a.get(k) / norm);
       return this;
     }
     const inWS = new Set(this.contents);
@@ -73,10 +81,21 @@ export class Workspace {
       for (let d = 0; d < CODE_DIM; d++) this.conj[d] += v * c[d];
     }
     this.total = s;
+    this._time(next, k => this.a.get(k));
     for (const [k] of this.info) if (!this.a.has(k)) this.info.delete(k);
     return this;
   }
 
+  _time(keys, act) {
+    const keep = new Set(keys);
+    for (const k of [...this.age.keys()]) if (!keep.has(k)) this.age.delete(k);
+    for (const k of keys) this.age.set(k, (this.age.get(k) ?? -1) + 1);
+    this.gTime.fill(0);
+    for (const k of keys) {
+      const c = codeFor(k), v = act(k), bs = basis(this.age.get(k));
+      for (let b = 0; b < NB; b++) for (let i = 0; i < CODE_DIM; i++) this.gTime[b * CODE_DIM + i] += v * bs[b] * c[i];
+    }
+  }
   has(k) { return this.contents.includes(k); }
   activation(k) { return this.a.get(k) || 0; }
   /** Share of processing resources devoted to a content (what "attention" amounts to here). */

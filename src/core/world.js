@@ -108,8 +108,8 @@ export class World {
       else if (tr === T.THORN) s.thorn.push([x, y, 1]);
     }
     for (const o of this.objects) {
-      if (o.type === 'bush' && o.berries > 0) s.food.push([o.x, o.y, 0.45 + 0.15 * o.berries]);
-      else if (o.type === 'pellet') s.food.push([o.x, o.y, 0.9]);
+      if (o.type === 'bush' && o.berries > 0 && !o.scentless) s.food.push([o.x, o.y, 0.45 + 0.15 * o.berries]);
+      else if (o.type === 'pellet') s.food.push([o.x, o.y, 0.45 + 3.2 * (o.energy ?? 0.14)]);
       else if (o.type === 'bowl' && o.sips > 0) s.water.push([o.x, o.y, 0.9]);
       else if (o.type === 'toy') s.toy.push([o.x, o.y, 1]);
     }
@@ -202,7 +202,7 @@ export class World {
       else if (bush) {
         const b = this.berryFeatures(bush);
         bush.berries--; this._src = null;
-        ev.push({ type: 'eat', item: 'berry', toxic: bush.toxic, energy: bush.toxic ? 0.03 : 0.11 * b.size, taste: 0.8, features: b, bushId: bush.id });
+        ev.push({ type: 'eat', item: 'berry', toxic: bush.toxic, energy: bush.toxic ? 0.03 : 0.11 * b.size, taste: 0.8, features: b, bushId: bush.id, harm: bush.harm });
       } else if (bowl) { bowl.sips--; this._src = null; ev.push({ type: 'drink', amount: 0.09 }); if (bowl.sips <= 0) this.removeObject(bowl); }
       else if (this.terrainAt(body.x, body.y) === T.POND) ev.push({ type: 'drink', amount: 0.07 });
       else if (toy) {

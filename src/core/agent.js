@@ -58,13 +58,14 @@ export class Agent {
     this.us = 0;
     this.affect = { valence: 0, arousal: 0, mood: 0, r: 0, ema: 0 };
     this.fam = { obj: {}, toy: {}, cue: {} };
+    this.assoc = {}; this.cueSeen = {};
     this.pending = [];
     this.berry = null;       // current perceptual evidence about the berry here
     this.nextBias = new Map();
     this.actBias = new Float64Array(NA);
     this.recalled = null; this.spont = null;
     this.plan = null;
-    this.learning = true; this.allowed = null; this.forced = null;
+    this.learning = true; this.allowed = null; this.forced = null; this.frozen = false; this.contingency = null;
     this.lastCallT = -999; this.lastUtterance = null;
     this.heardNow = [];
     this.stats = { ticks: 0, eatenGood: 0, eatenToxic: 0, drinks: 0, calls: 0, babbles: 0, words: 0, hurt: 0, sleepTicks: 0, homeoErr: 0, plays: 0 };
@@ -156,12 +157,16 @@ export class Agent {
       if (lv <= 0) continue;
       const fam = this.fam.cue[cu] || 0;
       const nov = 1 / (1 + 0.04 * fam);
-      const val = Math.min(0.8, Math.abs(this.pav.strengthOf(codeFor('cue:' + cu))) * 1.5);
-      add('cue:' + cu, (sleeping ? 0.5 : 1) * lv * (0.35 + 0.45 * nov + val), 'cue', cu);
-      this.fam.cue[cu] = fam + 0.1;
+      const val = Math.min(0.8, Math.abs(this.pav.strengthOf(codeFor('cue:' + cu))) * 3); // Mackintosh: predictive cues keep attention
+      const assoc = this.assoc[cu] || 0; // Pearce–Hall associability: recent surprise after this cue
+      add('cue:' + cu, (sleeping ? 0.5 : 1) * lv * (0.35 + 0.45 * nov + val + Math.min(0.6, 1.5 * assoc)), 'cue', cu);
+      this.fam.cue[cu] = fam + 0.02;
+      this.cueSeen[cu] = this.t;
     }
     for (const w of heard) add('word:' + w, 0.75, 'word', w);
     if (b.touch > 0) add('touch', 0.85, 'touch');
+    const ate = this.lastEvents.find(e => e.type === 'eat') || this.lastExt?.find(e => e.type === 'eat');
+    if (ate) add('taste', 0.9, 'taste', ate.toxic ? 'bitter-süß' : 'süß');
     if (surprise > 4 && !sleeping) add('surprise', Math.min(0.9, 0.1 * surprise), 'surprise');
     if (this.lastAction !== null) add('act:' + this.actName(), 0.28, 'act', this.actName());
     if (this.recalled) add('mem:' + this.recalled.ep.id, (0.15 + 0.9 * this.recalled.score) * att * 1.3, 'memory', null, this.recalled.ep);
@@ -201,6 +206,7 @@ export class Agent {
     // 7. PAVLOVIAN PREDICTION
     const V = this.pav.step(this.ws, this.us, this.learning);
     this.us = 0;
+    for (const cu of CUES) if (this.t - (this.cueSeen[cu] ?? -1e9) < 30) this.assoc[cu] = 0.9 * (this.assoc[cu] || 0) + 0.1 * Math.min(1, Math.abs(this.pav.delta) * 3);
 
     // 8. LANGUAGE: associate words with what is in mind; understand known words
     this.lex.associate(rep, this.t);
@@ -231,11 +237,14 @@ export class Agent {
     if (this.prevTrans) { this.prevTrans.a2 = a; this.prevTrans = null; }
     this.prev = { x, a };
     this.lastAction = a;
+    if (this.frozen) { this.lastEvents = []; this.bodyEvents = []; if (a === A.CALL) this.vocalize(world, rep); return a; } // paralysed (PCI)
     const events = world.applyAction(b, a);
     if (a === A.SLEEP && !sleeping) { b.fallAsleep(); this.note('Ich schlafe ein.'); }
     if (a === A.CALL) this.vocalize(world, rep);
-    for (const e of events) this.onActionEvent(e);
-    const bodyEv = b.update(world, events.concat(internal, this.external.splice(0)), this.t);
+    if (this.contingency) { const ce = this.contingency(a); if (ce) this.external.push(...ce); } // apparatus responds immediately
+    const ext = this.external.splice(0); this.lastExt = ext;
+    for (const e of events.concat(ext)) this.onActionEvent(e);
+    const bodyEv = b.update(world, events.concat(internal, ext), this.t);
     for (const e of bodyEv) this.onBodyEvent(e);
     this.checkPendingBerries();
     this.lastEvents = events; this.bodyEvents = bodyEv;
@@ -480,7 +489,7 @@ export class Agent {
       v: 1, seed: this.seed, lesion: this.lesion, name: this.name, p: this.p, t: this.t,
       rng: this.rng.toJSON(), body: this.body.toJSON(), ws: this.ws.toJSON(), ast: this.ast.toJSON(),
       disc: this.disc.toJSON(), meta: this.meta.toJSON(), pav: this.pav.toJSON(), mem: this.mem.toJSON(), map: this.map.toJSON(),
-      wm: this.wm.toJSON(), lex: this.lex.toJSON(), q: this.q.toJSON(), affect: this.affect, fam: this.fam, stats: this.stats, log: this.log,
+      wm: this.wm.toJSON(), lex: this.lex.toJSON(), q: this.q.toJSON(), affect: this.affect, fam: this.fam, assoc: this.assoc, stats: this.stats, log: this.log,
       trainSteps: this.trainSteps,
     };
   }
@@ -488,7 +497,7 @@ export class Agent {
     const a = new Agent({ seed: o.seed, lesion: o.lesion, world, params: o.p, name: o.name, start: [o.body.x, o.body.y] });
     a.t = o.t; a.rng = RNG.fromJSON(o.rng); a.body = Body.fromJSON(o.body); a.ws.load(o.ws); a.ast.load(o.ast);
     a.disc.load(o.disc); a.meta.load(o.meta); a.pav.load(o.pav); a.mem.load(o.mem); a.map.load(o.map); a.wm.load(o.wm); a.lex.load(o.lex);
-    a.q = MLP.fromJSON(o.q); a.qT = a.q.clone(); a.affect = o.affect; a.fam = o.fam; a.stats = o.stats; a.log = o.log || []; a.trainSteps = o.trainSteps || 0;
+    a.q = MLP.fromJSON(o.q); a.qT = a.q.clone(); a.affect = o.affect; a.fam = o.fam; a.assoc = o.assoc || {}; a.stats = o.stats; a.log = o.log || []; a.trainSteps = o.trainSteps || 0;
     a.prevDrive = a.body.drive();
     return a;
   }

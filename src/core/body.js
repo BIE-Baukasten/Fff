@@ -94,7 +94,7 @@ export class Body {
     if (damage > 0) out.push({ type: 'hurt', dmg: damage });
 
     // nociception: acute damage + chronic wound signal; perceived pain is modulated by analgesia
-    this.nociception = clamp(0.85 * this.nociception + damage * 6 + 0.012 * Math.max(0, 0.85 - h.integrity) * 4);
+    this.nociception = clamp(0.85 * this.nociception + damage * 6 + 0.14 * Math.max(0, 0.9 - h.integrity)); // acute + chronic wound pain
     const zoneAnalgesia = world.analgesicCells.has(world.idx(this.x, this.y)) ? 0.85 : 0;
     this.analgesia = Math.max(this.analgesia * 0.97, zoneAnalgesia);
     this.pain = this.nociception * (1 - this.analgesia);
