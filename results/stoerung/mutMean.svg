@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" width="560" height="300" font-family="system-ui, sans-serif" font-size="12">
+<rect width="560" height="300" fill="#ffffff"/>
+<text x="64" y="22" font-size="14" font-weight="600" fill="#1d2330">Mutationsrate ⌀</text>
+<text x="540" y="22" text-anchor="end" fill="#555c6b">ρ = -0,22, p = 0,016 · Höcker p = 0,188</text>
+<line x1="64" x2="540" y1="239.2" y2="239.2" stroke="#e3e6ec"/>
+<text x="56" y="243.2" text-anchor="end" fill="#555c6b">0</text>
+<line x1="64" x2="540" y1="182.5" y2="182.5" stroke="#e3e6ec"/>
+<text x="56" y="186.5" text-anchor="end" fill="#555c6b">0,05</text>
+<line x1="64" x2="540" y1="125.7" y2="125.7" stroke="#e3e6ec"/>
+<text x="56" y="129.7" text-anchor="end" fill="#555c6b">0,10</text>
+<line x1="64" x2="540" y1="68.9" y2="68.9" stroke="#e3e6ec"/>
+<text x="56" y="72.9" text-anchor="end" fill="#555c6b">0,15</text>
+<polyline points="111.6,139.5 206.8,130.6 302.0,162.8 397.2,167.1 492.4,170.0" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,125.1 206.8,145.4 302.0,151.2 397.2,178.5 492.4,173.8" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,184.8 206.8,171.0 302.0,184.4 397.2,178.7 492.4,166.7" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,164.9 206.8,183.0 302.0,177.8 397.2,178.4 492.4,158.5" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,133.8 206.8,144.3 302.0,147.9 397.2,54.8 492.4,180.0" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,160.9 206.8,156.0 302.0,148.5 397.2,154.0 492.4,177.5" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,134.4 206.8,91.1 302.0,118.1 397.2,103.6 492.4,141.9" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,148.9 206.8,83.7 302.0,78.0 397.2,129.7 492.4,82.7" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,176.6 206.8,168.5 302.0,180.4 397.2,166.8 492.4,165.1" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,132.1 206.8,146.4 302.0,149.6 397.2,170.1 492.4,154.1" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,118.4 206.8,107.3 302.0,78.8 397.2,82.3 492.4,239.2" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="111.6,171.5 206.8,186.5 302.0,192.1 397.2,200.5 492.4,198.0" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<circle cx="105.6" cy="139.5" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="108.6" cy="125.1" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="111.6" cy="184.8" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="114.6" cy="164.9" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="117.6" cy="133.8" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="105.6" cy="160.9" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="108.6" cy="134.4" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="111.6" cy="148.9" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="114.6" cy="176.6" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="117.6" cy="132.1" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="105.6" cy="118.4" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="108.6" cy="171.5" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<line x1="111.6" x2="111.6" y1="161.1" y2="137.6" stroke="#1d2330" stroke-width="2"/>
+<rect x="97.6" y="147.2" width="28" height="4" fill="#1d2330"/>
+<text x="111.6" y="274" text-anchor="middle" fill="#1d2330">nie</text>
+<circle cx="200.8" cy="130.6" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="203.8" cy="145.4" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="206.8" cy="171.0" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="209.8" cy="183.0" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="212.8" cy="144.3" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="200.8" cy="156.0" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="203.8" cy="91.1" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="206.8" cy="83.7" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="209.8" cy="168.5" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="212.8" cy="146.4" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="200.8" cy="107.3" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="203.8" cy="186.5" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<line x1="206.79999999999998" x2="206.79999999999998" y1="159.9" y2="124.3" stroke="#1d2330" stroke-width="2"/>
+<rect x="192.79999999999998" y="140.8" width="28" height="4" fill="#1d2330"/>
+<text x="206.79999999999998" y="274" text-anchor="middle" fill="#1d2330">alle 8 Tage</text>
+<circle cx="296.0" cy="162.8" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="299.0" cy="151.2" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="302.0" cy="184.4" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="305.0" cy="177.8" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="308.0" cy="147.9" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="296.0" cy="148.5" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="299.0" cy="118.1" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="302.0" cy="78.0" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="305.0" cy="180.4" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="308.0" cy="149.6" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="296.0" cy="78.8" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<circle cx="299.0" cy="192.1" r="3" fill="#2f9e6e" fill-opacity="0.45"/>
+<line x1="302" x2="302" y1="167.0" y2="125.6" stroke="#1d2330" stroke-width="2"/>
+<rect x="288" y="145.5" width="28" height="4" fill="#1d2330"/>
+<text x="302" y="274" text-anchor="middle" fill="#1d2330">alle 4 Tage</text>
+<circle cx="391.2" cy="167.1" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="394.2" cy="178.5" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="397.2" cy="178.7" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="400.2" cy="178.4" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="403.2" cy="54.8" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="391.2" cy="154.0" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="394.2" cy="103.6" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="397.2" cy="129.7" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="400.2" cy="166.8" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="403.2" cy="170.1" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="391.2" cy="82.3" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<circle cx="394.2" cy="200.5" r="3" fill="#b8466b" fill-opacity="0.45"/>
+<line x1="397.2" x2="397.2" y1="169.1" y2="121.3" stroke="#1d2330" stroke-width="2"/>
+<rect x="383.2" y="145.0" width="28" height="4" fill="#1d2330"/>
+<text x="397.2" y="274" text-anchor="middle" fill="#1d2330">alle 2 Tage</text>
+<circle cx="486.4" cy="170.0" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="489.4" cy="173.8" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="492.4" cy="166.7" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="495.4" cy="158.5" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="498.4" cy="180.0" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="486.4" cy="177.5" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="489.4" cy="141.9" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="492.4" cy="82.7" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="495.4" cy="165.1" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="498.4" cy="154.1" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="486.4" cy="239.2" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<circle cx="489.4" cy="198.0" r="3" fill="#7a5bc7" fill-opacity="0.45"/>
+<line x1="492.40000000000003" x2="492.40000000000003" y1="186.1" y2="146.7" stroke="#1d2330" stroke-width="2"/>
+<rect x="478.40000000000003" y="165.3" width="28" height="4" fill="#1d2330"/>
+<text x="492.40000000000003" y="274" text-anchor="middle" fill="#1d2330">täglich</text>
+<text x="64" y="292" fill="#7b8293" font-size="11">Punkte: einzelne Saaten (Mittel Tag 40–60); Balken: Mittelwert mit 95-%-Intervall</text>
+</svg>
