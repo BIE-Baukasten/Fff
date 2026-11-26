@@ -5,6 +5,8 @@ import { mean, sd, bootstrapCI, hedgesG, pearson, eigSym } from '../src/experime
 import { LESIONS } from '../src/core/config.js';
 
 const S = JSON.parse(readFileSync(process.argv[2] || 'results/study.json', 'utf8'));
+const TAG = process.argv[3] || '';
+const sfx = TAG ? '-' + TAG : '';
 const CONDS = Object.keys(LESIONS).filter(c => S.results.some(r => r.lesion === c));
 const SHORT = { full: 'voll', noGW: '−GW', noAST: '−AST', noMeta: '−Meta', noAffect: '−Affekt', noMemory: '−Gedächtnis', minimal: 'minimal' };
 const by = c => S.results.filter(r => r.lesion === c);
@@ -78,7 +80,7 @@ const zw = complete.map((row, i) => row); void zw;
 // ---- profile per condition: which markers pass ---------------------------------------------------
 summary.profiles = Object.fromEntries(CONDS.map(c => [c, summary.markers.filter(k => !k.internal).map(k => (k.byCond[c].pass ? 1 : 0))]));
 
-writeFileSync('results/summary.json', JSON.stringify(summary, (k, v) => (k === 'values' ? undefined : v), 1));
+writeFileSync(`results/summary${sfx}.json`, JSON.stringify(summary, (k, v) => (k === 'values' ? undefined : v), 1));
 
 // ---- figures ---------------------------------------------------------------------------------------
 mkdirSync('docs/fig', { recursive: true });
@@ -87,36 +89,36 @@ const COLORS = { full: '#0d7a78', noGW: '#c2410c', noAST: '#7c3aed', noMeta: '#2
 
 // Fig 1: marker × condition matrix (effect relative to null, colour = pass)
 {
-  const mk = summary.markers, W = 230 + CONDS.length * 82, H = 60 + mk.length * 26;
+  const mk = summary.markers, LW = 300, W = LW + CONDS.length * 82, H = 60 + mk.length * 26;
   let s = svgOpen(W, H, 'Marker × Architektur');
-  CONDS.forEach((c, j) => { s += `<text x="${230 + j * 82 + 41}" y="34" text-anchor="middle" font-weight="600">${SHORT[c]}</text>`; });
+  CONDS.forEach((c, j) => { s += `<text x="${LW + j * 82 + 41}" y="34" text-anchor="middle" font-weight="600">${SHORT[c]}</text>`; });
   mk.forEach((k, i) => {
     const y = 48 + i * 26;
-    s += `<text x="8" y="${y + 16}" fill="#1b2520">${k.id} ${k.label.length > 30 ? k.label.slice(0, 29) + '…' : k.label}</text>`;
+    s += `<text x="8" y="${y + 16}" fill="#1b2520">${k.id} ${k.label.length > 40 ? k.label.slice(0, 39) + '…' : k.label}</text>`;
     CONDS.forEach((c, j) => {
       const r = k.byCond[c];
       const fill = r.n === 0 ? '#eeeeee' : r.pass ? '#cfe9e5' : '#f6dadd';
-      s += `<rect x="${230 + j * 82 + 3}" y="${y}" width="76" height="22" rx="4" fill="${fill}"/>`;
-      s += `<text x="${230 + j * 82 + 41}" y="${y + 15}" text-anchor="middle" fill="#1b2520">${fmt(r.mean)}</text>`;
+      s += `<rect x="${LW + j * 82 + 3}" y="${y}" width="76" height="22" rx="4" fill="${fill}"/>`;
+      s += `<text x="${LW + j * 82 + 41}" y="${y + 15}" text-anchor="middle" fill="#1b2520">${fmt(r.mean)}</text>`;
     });
   });
-  writeFileSync('docs/fig/marker-matrix.svg', s + '</svg>');
+  writeFileSync(`docs/fig/${TAG ? TAG + '-' : ''}marker-matrix.svg`, s + '</svg>');
 }
 // Fig 2: conditioning curves (full vs noGW), trace and delay
 function curveFig(file, title, series) {
-  const W = 520, H = 230, L = 46, B = 34, T = 28;
+  const W = 660, H = 230, L = 46, B = 34, T = 28, PR = 150;
   const all = series.flatMap(sr => sr.y);
   const ymax = Math.max(0.1, ...all), ymin = Math.min(0, ...all), n = series[0].y.length;
-  const X = i => L + (i / (n - 1)) * (W - L - 14), Y = v => H - B - ((v - ymin) / (ymax - ymin)) * (H - B - T);
+  const X = i => L + (i / (n - 1)) * (W - L - PR), Y = v => H - B - ((v - ymin) / (ymax - ymin)) * (H - B - T);
   let s = svgOpen(W, H, title) + `<text x="${L}" y="18" font-weight="600">${title}</text>`;
-  for (let k = 0; k <= 4; k++) { const v = ymin + (k / 4) * (ymax - ymin); s += `<line x1="${L}" x2="${W - 14}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e5e7eb"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" fill="#555">${v.toFixed(2)}</text>`; }
-  s += `<text x="${(W + L) / 2}" y="${H - 6}" text-anchor="middle" fill="#555">Ticks nach CS-Beginn (US bei 24)</text>`;
+  for (let k = 0; k <= 4; k++) { const v = ymin + (k / 4) * (ymax - ymin); s += `<line x1="${L}" x2="${W - PR}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e5e7eb"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" fill="#555">${v.toFixed(2)}</text>`; }
+  s += `<text x="${(W - PR + L) / 2}" y="${H - 6}" text-anchor="middle" fill="#555">Ticks nach CS-Beginn (US bei 24)</text>`;
   for (const sr of series) s += `<polyline fill="none" stroke="${sr.color}" stroke-width="2" ${sr.dash ? 'stroke-dasharray="5 4"' : ''} points="${sr.y.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>`;
-  series.forEach((sr, i) => { s += `<rect x="${W - 170}" y="${T + 4 + i * 16}" width="12" height="3" fill="${sr.color}"/><text x="${W - 152}" y="${T + 9 + i * 16}">${sr.label}</text>`; });
-  writeFileSync('docs/fig/' + file, s + '</svg>');
+  series.forEach((sr, i) => { s += `<rect x="${W - PR + 14}" y="${T + 4 + i * 16}" width="12" height="3" fill="${sr.color}"/><text x="${W - PR + 32}" y="${T + 9 + i * 16}">${sr.label}</text>`; });
+  writeFileSync(`docs/fig/${TAG ? TAG + '-' : ''}` + file, s + '</svg>');
 }
 const avgCurve = (c, proto, key) => { const rs = by(c).filter(ok).map(r => m(r, `${proto}.${key}`)).filter(Boolean); return rs[0].map((_, i) => mean(rs.map(x => x[i]))); };
-if (CONDS.includes('noGW')) for (const proto of ['trace', 'delay']) {
+if (CONDS.includes('noGW') && CONDS.includes('full')) for (const proto of ['trace', 'delay']) {
   curveFig(`${proto}-curves.svg`, proto === 'trace' ? 'Spurkonditionierung: konditionierte Erwartung V' : 'Verzögerungskonditionierung: konditionierte Erwartung V', [
     { label: 'voll, CS+', y: avgCurve('full', proto, 'curvePlus'), color: COLORS.full },
     { label: 'voll, CS−', y: avgCurve('full', proto, 'curveMinus'), color: COLORS.full, dash: true },
@@ -140,7 +142,7 @@ if (CONDS.includes('noGW')) for (const proto of ['trace', 'delay']) {
     s += `<polyline fill="none" stroke="${COLORS[c]}" stroke-width="2" stroke-dasharray="5 4" points="${rep.map((v, k) => `${X(cs[k])},${Y(Math.max(0, v))}`).join(' ')}"/>`;
     s += `<rect x="${W - 120}" y="${T + 4 + i * 16}" width="12" height="3" fill="${COLORS[c]}"/><text x="${W - 102}" y="${T + 9 + i * 16}">${SHORT[c]}</text>`;
   });
-  writeFileSync('docs/fig/masking.svg', s + '</svg>');
+  writeFileSync(`docs/fig/${TAG ? TAG + '-' : ''}masking.svg`, s + '</svg>');
 }
 // Fig 4: hunger effect in trade-off per condition (P(cross) hungry vs sated)
 {
@@ -155,7 +157,7 @@ if (CONDS.includes('noGW')) for (const proto of ['trace', 'delay']) {
     if (Number.isFinite(sa)) s += `<rect x="${x + bw / 2 - 4}" y="${Y(sa)}" width="${bw / 2 - 6}" height="${Y(0) - Y(sa)}" fill="${COLORS[c]}" opacity="0.4"/>`;
     s += `<text x="${x + bw / 2 - 5}" y="${H - B + 16}" text-anchor="middle" fill="#333">${SHORT[c]}</text>`;
   });
-  writeFileSync('docs/fig/tradeoff.svg', s + '</svg>');
+  writeFileSync(`docs/fig/${TAG ? TAG + '-' : ''}tradeoff.svg`, s + '</svg>');
 }
 
 // ---- markdown report tables -------------------------------------------------------------------------
@@ -174,14 +176,14 @@ md += `Eigenwerte: ${eig.values.map(v => v.toFixed(2)).join(', ')}\n\nLadungen P
 md += `| | ${CL.join(' | ')} |\n|---|${CL.map(() => '---').join('|')}|\n`;
 R.forEach((row, i) => { md += `| ${CL[i]} | ${row.map(v => fmt(v)).join(' | ')} |\n`; });
 md += `\n## Abbildungen\n\n![Marker-Matrix](fig/marker-matrix.svg)\n\n![Spurkonditionierung](fig/trace-curves.svg)\n\n![Verzögerungskonditionierung](fig/delay-curves.svg)\n\n![Maskierung](fig/masking.svg)\n\n![Trade-off](fig/tradeoff.svg)\n`;
-writeFileSync('docs/ERGEBNISSE.md', md);
+writeFileSync(`docs/ERGEBNISSE${sfx}.md`, md.replace(/\(fig\//g, `(fig/${TAG ? TAG + '-' : ''}`));
 
 // ---- compact version for the web page -----------------------------------------------------------------
 const web = {
   n: S.results.length, conditions: CONDS, short: SHORT, labels: Object.fromEntries(CONDS.map(c => [c, LESIONS[c].label])),
-  markers: summary.markers.filter(k => !k.internal && !k.explorative).map(k => ({ id: k.id, label: k.label, byCond: Object.fromEntries(CONDS.map(c => [c, { pass: k.byCond[c].pass, text: `${SHORT[c]}: ${fmt(k.byCond[c].mean)} [${fmt(k.byCond[c].ci[0])}, ${fmt(k.byCond[c].ci[1])}]` }])) })),
+  markers: summary.markers.filter(k => !k.internal && !k.explorative).map(k => ({ id: k.id, label: k.label, byCond: Object.fromEntries(CONDS.map(c => [c, { n: k.byCond[c].n, pass: k.byCond[c].pass, text: `${SHORT[c]}: ${fmt(k.byCond[c].mean)} [${fmt(k.byCond[c].ci[0])}, ${fmt(k.byCond[c].ci[1])}]` }])) })),
   pc1Share: summary.cluster.pc1Share,
 };
-writeFileSync('results/web-summary.json', JSON.stringify(web));
+if (!TAG) writeFileSync('results/web-summary.json', JSON.stringify(web));
 console.log(md.split('\n## Fitness')[0]);
 console.log('PC1 share', summary.cluster.pc1Share.toFixed(3), 'kaiser', summary.cluster.kaiser);

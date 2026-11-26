@@ -7,12 +7,24 @@ import { SETPOINT } from '../core/config.js';
 export const REAR_TICKS = 12000;
 
 /** Standardised rearing in the home world under lab conditions (clamped ambient temperature). */
-export function rear(seed, lesion, ticks = REAR_TICKS, { lab = true } = {}) {
+export function rear(seed, lesion, ticks = REAR_TICKS, { lab = true, care = false, params = {} } = {}) {
   const world = new World({ seed });
   if (lab) world.fixedAmbient = 0.5;
-  const agent = new Agent({ seed, lesion, world });
-  for (let i = 0; i < ticks && agent.alive; i++) { agent.step(world); world.step(); }
+  const agent = new Agent({ seed, lesion, world, params });
+  for (let i = 0; i < ticks && agent.alive; i++) {
+    agent.step(world); world.step();
+    if (care) nurse(agent);
+  }
   return { agent, world };
+}
+
+/** Post-hoc 'care rearing': a keeper keeps physiology within survivable bounds (like an ICU). */
+export function nurse(agent) {
+  const h = agent.body.h; let touched = false;
+  const lift = (k, lo, to) => { if (h[k] < lo) { h[k] = to; touched = true; } };
+  lift('energy', 0.3, 0.55); lift('water', 0.3, 0.55); lift('integrity', 0.45, 0.6); lift('rest', 0.1, 0.4);
+  if (h.temp < 0.38 || h.temp > 0.62) { h.temp = 0.5; touched = true; }
+  if (touched) agent.rebaseline();
 }
 
 /** Move a (copy of an) individual into an empty experimental box. */

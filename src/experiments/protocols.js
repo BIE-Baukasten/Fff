@@ -35,7 +35,7 @@ export function conditioning(src, srcWorld, { mode = 'trace', trials = 70, probe
       if (k === 0) world.ring(cue, csDur, 1);
       if (k === usT && kind === 'plus' && !probe) agent.deliver({ type: 'eat', item: 'sweet', energy: 0.02, taste: 1 });
       const a = tick(agent, world);
-      vs.push(agent.pav.V);
+      vs.push(agent.crV);
       if (k >= usT - 4 && k < usT && a === A.CONSUME) lk++;
     }
     if (probe) {
@@ -280,7 +280,7 @@ export function negativePatterning(src, srcWorld, { trials = 750, measure = 150,
     for (let k = 0; k < 22; k++) {
       if (k === 0) { if (ty !== 'B') world.ring('ton', 20, 1); if (ty !== 'A') world.ring('licht', 20, 1); }
       if (k === 18 && ty !== 'AB') agent.deliver({ type: 'eat', item: 'sweet', energy: 0.02, taste: 1 });
-      tick(agent, world); vs.push(agent.pav.V);
+      tick(agent, world); vs.push(agent.crV);
     }
     if (i >= trials - measure) v[ty].push(mean(vs.slice(14, 18))); // CR before the US is due
   }

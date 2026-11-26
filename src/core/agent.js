@@ -10,7 +10,7 @@ import { T } from './world.js';
 import { Workspace } from './workspace.js';
 import { AttentionSchema } from './attention.js';
 import { Discriminator, Metacognition } from './metacog.js';
-import { Pavlov } from './pavlov.js';
+import { Pavlov, DirectPavlov } from './pavlov.js';
 import { EpisodicMemory, CognitiveMap } from './memory.js';
 import { WorldModel } from './worldmodel.js';
 import { Lexicon } from './lexicon.js';
@@ -43,6 +43,7 @@ export class Agent {
     this.disc = new Discriminator();
     this.meta = new Metacognition(this.c.meta);
     this.pav = new Pavlov(this.p);
+    this.cb = this.p.cerebellum ? new DirectPavlov(CUES.length, this.p) : null;
     this.mem = new EpisodicMemory(this.c.memory);
     this.map = new CognitiveMap(this.c.memory, world.width, world.height);
     this.wm = new WorldModel(30, NA);
@@ -84,7 +85,7 @@ export class Agent {
   }
   rebaseline() { this.prevDrive = this.body.drive(); this.us = 0; }
   deliver(ev) { this.external.push(ev); }
-  endEpisode() { if (this.replay.length) { const last = this.replay[(this.rIdx - 1 + this.replay.length) % this.replay.length]; if (last) last.done = true; } this.prev = null; this.pav.reset(); }
+  endEpisode() { if (this.replay.length) { const last = this.replay[(this.rIdx - 1 + this.replay.length) % this.replay.length]; if (last) last.done = true; } this.prev = null; this.pav.reset(); if (this.cb) this.cb.reset(); }
   note(text) { this.log.push({ t: this.t, text }); if (this.log.length > 80) this.log.shift(); }
 
   // ------------------------------------------------------------------ the cycle
@@ -204,7 +205,9 @@ export class Agent {
     }
 
     // 7. PAVLOVIAN PREDICTION
-    const V = this.pav.step(this.ws, this.us, this.learning);
+    let V = this.pav.step(this.ws, this.us, this.learning);
+    if (this.cb) V += this.cb.step(CUES.map(cu => world.cueLevel(cu)), this.us, this.learning);
+    this.crV = V;
     this.us = 0;
     for (const cu of CUES) if (this.t - (this.cueSeen[cu] ?? -1e9) < 30) this.assoc[cu] = 0.9 * (this.assoc[cu] || 0) + 0.1 * Math.min(1, Math.abs(this.pav.delta) * 3);
 
@@ -477,7 +480,7 @@ export class Agent {
       affect: { ...this.affect }, contents, preconscious: pre, ignitions: this.ws.ignitions.slice(),
       ast: this.ast.report(), concern: this.concern,
       berry: this.berry ? { p: this.berry.p, conf: this.berry.conf, pi: this.berry.pi, hue: this.berry.est.hue } : null,
-      V: this.pav.V, plan: this.plan ? { kind: this.plan.kind, dist: this.plan.dist } : null,
+      V: this.crV ?? this.pav.V, plan: this.plan ? { kind: this.plan.kind, dist: this.plan.dist } : null,
       utterance: this.lastUtterance, stats: { ...this.stats }, action: ACTIONS[this.lastAction],
       probs: this.lastProbs ? normalise(this.lastProbs) : null,
     };
@@ -488,7 +491,7 @@ export class Agent {
     return {
       v: 1, seed: this.seed, lesion: this.lesion, name: this.name, p: this.p, t: this.t,
       rng: this.rng.toJSON(), body: this.body.toJSON(), ws: this.ws.toJSON(), ast: this.ast.toJSON(),
-      disc: this.disc.toJSON(), meta: this.meta.toJSON(), pav: this.pav.toJSON(), mem: this.mem.toJSON(), map: this.map.toJSON(),
+      disc: this.disc.toJSON(), meta: this.meta.toJSON(), pav: this.pav.toJSON(), cb: this.cb ? this.cb.toJSON() : null, mem: this.mem.toJSON(), map: this.map.toJSON(),
       wm: this.wm.toJSON(), lex: this.lex.toJSON(), q: this.q.toJSON(), affect: this.affect, fam: this.fam, assoc: this.assoc, stats: this.stats, log: this.log,
       trainSteps: this.trainSteps,
     };
@@ -496,7 +499,7 @@ export class Agent {
   static fromJSON(o, world) {
     const a = new Agent({ seed: o.seed, lesion: o.lesion, world, params: o.p, name: o.name, start: [o.body.x, o.body.y] });
     a.t = o.t; a.rng = RNG.fromJSON(o.rng); a.body = Body.fromJSON(o.body); a.ws.load(o.ws); a.ast.load(o.ast);
-    a.disc.load(o.disc); a.meta.load(o.meta); a.pav.load(o.pav); a.mem.load(o.mem); a.map.load(o.map); a.wm.load(o.wm); a.lex.load(o.lex);
+    a.disc.load(o.disc); a.meta.load(o.meta); a.pav.load(o.pav); if (a.cb && o.cb) a.cb.load(o.cb); a.mem.load(o.mem); a.map.load(o.map); a.wm.load(o.wm); a.lex.load(o.lex);
     a.q = MLP.fromJSON(o.q); a.qT = a.q.clone(); a.affect = o.affect; a.fam = o.fam; a.assoc = o.assoc || {}; a.stats = o.stats; a.log = o.log || []; a.trainSteps = o.trainSteps || 0;
     a.prevDrive = a.body.drive();
     return a;

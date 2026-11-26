@@ -1,4 +1,5 @@
 node_modules/
 scratch_*.mjs
-results/raw/
+results/raw*/
+results/*.log
 *.cpuprofile

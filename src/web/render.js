@@ -119,7 +119,7 @@ export class Renderer {
     }
     const v = snap.affect.valence, ar = snap.affect.arousal;
     const breathe = Math.sin(this.t * (b.sleeping ? 1.6 : 3 + ar * 5)) * 0.04;
-    const R = s * (0.4 + breathe);
+    const R = s * (0.54 + breathe);
     if (snap.ignitions.length) this.glow = 1;
     this.glow *= Math.pow(0.1, dt);
     if (this.glow > 0.05) { g.strokeStyle = `rgba(63, 195, 189, ${this.glow * 0.8})`; g.lineWidth = 2.5; g.beginPath(); g.arc(x, y, R + 4 + (1 - this.glow) * 8, 0, 7); g.stroke(); }

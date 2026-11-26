@@ -1,0 +1,1914 @@
+{
+ "n": 84,
+ "created": "2026-11-26T00:33:54.108Z",
+ "conditions": [
+  "full",
+  "noGW",
+  "noAST",
+  "noMeta",
+  "noAffect",
+  "noMemory",
+  "minimal"
+ ],
+ "excluded": {
+  "full": [],
+  "noGW": [],
+  "noAST": [],
+  "noMeta": [],
+  "noAffect": [],
+  "noMemory": [],
+  "minimal": []
+ },
+ "markers": [
+  {
+   "id": "M1a",
+   "label": "Verzögerungskonditionierung",
+   "unit": "ΔV",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 12,
+     "mean": 0.9395397398455,
+     "sd": 0.06787069866795067,
+     "ci": [
+      0.9029843068879121,
+      0.9779856008276843
+     ],
+     "pass": true,
+     "g": null
+    },
+    "noGW": {
+     "n": 12,
+     "mean": 0.4996813806315729,
+     "sd": 0.03133594339878441,
+     "ci": [
+      0.4816814875124445,
+      0.5156865938471085
+     ],
+     "pass": true,
+     "g": -8.034247104337455
+    },
+    "noAST": {
+     "n": 12,
+     "mean": 1.0728002121004392,
+     "sd": 0.06593796903888621,
+     "ci": [
+      1.0373608771706986,
+      1.109779900988344
+     ],
+     "pass": true,
+     "g": 1.922922725948622
+    },
+    "noMeta": {
+     "n": 12,
+     "mean": 0.9427025679342041,
+     "sd": 0.06714760799329383,
+     "ci": [
+      0.9065282333567284,
+      0.9808454936066878
+     ],
+     "pass": true,
+     "g": 0.04523418097150118
+    },
+    "noAffect": {
+     "n": 12,
+     "mean": 1.246456885273899,
+     "sd": 0.09827468916918937,
+     "ci": [
+      1.1937442916778005,
+      1.30218919343152
+     ],
+     "pass": true,
+     "g": 3.5088939699506243
+    },
+    "noMemory": {
+     "n": 12,
+     "mean": 0.9351006194167661,
+     "sd": 0.05618311676320226,
+     "ci": [
+      0.9058211280345442,
+      0.9670789732828466
+     ],
+     "pass": true,
+     "g": -0.06879515966105136
+    },
+    "minimal": {
+     "n": 12,
+     "mean": 0.5800185420993414,
+     "sd": 0.04512061783863719,
+     "ci": [
+      0.5549310820699692,
+      0.6039410395193122
+     ],
+     "pass": true,
+     "g": -6.02337952075947
+    }
+   }
+  },
+  {
+   "id": "M1b",
+   "label": "Spurkonditionierung (18 Ticks Lücke)",
+   "unit": "ΔV",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 12,
+     "mean": 0.3213788707672997,
+     "sd": 0.03210743111347736,
+     "ci": [
+      0.3045664709660016,
+      0.3396629326953006
+     ],
+     "pass": true,
+     "g": null
+    },
+    "noGW": {
+     "n": 12,
+     "mean": 0.0026567299212851224,
+     "sd": 0.031217618174765316,
+     "ci": [
+      -0.013979940414981787,
+      0.01989911241768962
+     ],
+     "pass": false,
+     "g": -9.718155772238005
+    },
+    "noAST": {
+     "n": 12,
+     "mean": 0.5392349581355668,
+     "sd": 0.04267884370809041,
+     "ci": [
+      0.5163265414698247,
+      0.5630227441725822
+     ],
+     "pass": true,
+     "g": 5.569827401207937
+    },
+    "noMeta": {
+     "n": 12,
+     "mean": 0.32146056283987656,
+     "sd": 0.03289968570445041,
+     "ci": [
+      0.30396915467967006,
+      0.33999184050534526
+     ],
+     "pass": true,
+     "g": 0.002426480406992967
+    },
+    "noAffect": {
+     "n": 12,
+     "mean": 0.590276228337382,
+     "sd": 0.08446075462499951,
+     "ci": [
+      0.5440855111431343,
+      0.6351676963114592
+     ],
+     "pass": true,
+     "g": 4.063465754715172
+    },
+    "noMemory": {
+     "n": 12,
+     "mean": 0.3216256286348858,
+     "sd": 0.03557911025006645,
+     "ci": [
+      0.30298413405875574,
+      0.3416805433803299
+     ],
+     "pass": true,
+     "g": 0.007030532353449889
+    },
+    "minimal": {
+     "n": 12,
+     "mean": 0.003946866629317312,
+     "sd": 0.04001626268018321,
+     "ci": [
+      -0.01753616424749486,
+      0.025831486180634022
+     ],
+     "pass": false,
+     "g": -8.448259706398039
+    }
+   }
+  },
+  {
+   "id": "M2a-d",
+   "label": "Trade-off: Schaden hemmt Durchqueren",
+   "unit": "−β",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M2a-q",
+   "label": "Trade-off: Futterqualität fördert",
+   "unit": "β",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M2b",
+   "label": "Trade-off bedarfsabhängig (Hunger)",
+   "unit": "β",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M3-int",
+   "label": "Konfidenz sagt Fehler voraus (intern)",
+   "unit": "AUROC",
+   "null": 0.5,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M3-i",
+   "label": "Opt-out sagt Fehler voraus (gesamt)",
+   "unit": "AUROC",
+   "null": 0.5,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M3-ii",
+   "label": "Opt-out innerhalb gleicher Schwierigkeit",
+   "unit": "AUROC",
+   "null": 0.5,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M3-h",
+   "label": "Hampton-Vorteil (frei − erzwungen)",
+   "unit": "Δ Treffer",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M4",
+   "label": "Analgesie-Präferenz nur bei Verletzung",
+   "unit": "Δ Zeitanteil",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M5-perf",
+   "label": "Wahlleistung bei hohem Kontrast",
+   "unit": "Treffer",
+   "null": 0.5,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M5-rep",
+   "label": "Verzögerter Bericht bei hohem Kontrast",
+   "unit": "korr. Bericht",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M5-dis",
+   "label": "Leistung ohne Bericht (Blindsicht-Signatur)",
+   "unit": "Treffer − ½",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M6",
+   "label": "Negatives Patterning (konfigural)",
+   "unit": "ΔV",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M7",
+   "label": "Vigilanz (d′)",
+   "unit": "d′",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  },
+  {
+   "id": "M8",
+   "label": "PCI-Analogon wach − Schlaf",
+   "unit": "ΔPCI",
+   "null": 0,
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "sd": 0,
+     "ci": [
+      null,
+      null
+     ],
+     "pass": false,
+     "g": null
+    }
+   }
+  }
+ ],
+ "fitness": [
+  {
+   "id": "M9-s",
+   "label": "Überleben 30 000 Ticks (natürliche Welt)",
+   "unit": "Anteil",
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    }
+   },
+   "causes": {
+    "full": [],
+    "noGW": [],
+    "noAST": [],
+    "noMeta": [],
+    "noAffect": [],
+    "noMemory": [],
+    "minimal": []
+   }
+  },
+  {
+   "id": "M9-d",
+   "label": "Mittlerer homöostatischer Antrieb D",
+   "unit": "D",
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    }
+   },
+   "causes": {
+    "full": [],
+    "noGW": [],
+    "noAST": [],
+    "noMeta": [],
+    "noAffect": [],
+    "noMemory": [],
+    "minimal": []
+   }
+  },
+  {
+   "id": "M9-l",
+   "label": "Lebensdauer",
+   "unit": "Ticks",
+   "byCond": {
+    "full": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noGW": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noAST": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noMeta": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noAffect": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "noMemory": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    },
+    "minimal": {
+     "n": 0,
+     "mean": null,
+     "ci": [
+      null,
+      null
+     ],
+     "g": null
+    }
+   },
+   "causes": {
+    "full": [],
+    "noGW": [],
+    "noAST": [],
+    "noMeta": [],
+    "noAffect": [],
+    "noMemory": [],
+    "minimal": []
+   }
+  }
+ ],
+ "cluster": {
+  "markers": [
+   "M1a",
+   "M1b",
+   "M2a-d",
+   "M2b",
+   "M3-i",
+   "M4",
+   "M5-rep",
+   "M5-dis",
+   "M6",
+   "M7"
+  ],
+  "n": 0,
+  "R": [
+   [
+    1,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    1,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    1,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    1,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    1,
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null,
+    1,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    1,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    1,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    1,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    1
+   ]
+  ],
+  "eigenvalues": [
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "pc1Share": 0.1,
+  "pc1Loadings": [
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "kaiser": 0
+ },
+ "profiles": {
+  "full": [
+   1,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "noGW": [
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "noAST": [
+   1,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "noMeta": [
+   1,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "noAffect": [
+   1,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "noMemory": [
+   1,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "minimal": [
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ }
+}

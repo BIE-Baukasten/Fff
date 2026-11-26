@@ -149,8 +149,8 @@ function study() {
   if (!S) { $('study').innerHTML = '<h3>Die Studie</h3><p class="muted">Ergebnisse der Markerstudie werden beim nächsten Build eingebettet.</p>'; return; }
   const conds = S.conditions;
   const head = `<tr><th>Marker</th>${conds.map(c => `<th title="${esc(S.labels[c])}">${esc(S.short[c])}</th>`).join('')}</tr>`;
-  const rows = S.markers.map(m => `<tr><td>${esc(m.label)}</td>${conds.map(c => { const r = m.byCond[c]; return `<td class="${r.pass ? 'pass' : 'fail'}" title="${esc(r.text)}">${r.pass ? '●' : '○'}</td>`; }).join('')}</tr>`).join('');
-  $('study').innerHTML = `<h3>Die Studie hinter diesem Wesen</h3>${S.intro}<div class="tablewrap"><table class="matrix"><thead>${head}</thead><tbody>${rows}</tbody></table></div><p class="hint">● bestanden (95-%-KI schließt Null aus) · ○ nicht bestanden. N = ${S.n} Individuen. Spalten: Architekturvarianten; Zeilen: Verhaltensmarker aus der Tierbewusstseinsforschung.</p>${S.findings}`;
+  const rows = S.markers.map(m => `<tr><td>${esc(m.label)}</td>${conds.map(c => { const r = m.byCond[c]; return r.n === 0 ? '<td class="muted" title="nicht testbar: in der Aufzucht gestorben">–</td>' : `<td class="${r.pass ? 'pass' : 'fail'}" title="${esc(r.text)}">${r.pass ? '●' : '○'}</td>`; }).join('')}</tr>`).join('');
+  $('study').innerHTML = `<h3>Die Studie hinter diesem Wesen</h3>${S.intro}<div class="tablewrap"><table class="matrix"><thead>${head}</thead><tbody>${rows}</tbody></table></div><p class="hint">● bestanden (95-%-KI schließt Null aus) · ○ nicht bestanden · – nicht testbar (diese Wesen starben schon in der Aufzucht). N = ${S.n} Individuen. Spalten: Architekturvarianten; Zeilen: Verhaltensmarker aus der Tierbewusstseinsforschung.</p>${S.findings}`;
 }
 function runTest(kind) {
   const out = $('testOut');
