@@ -1,0 +1,36 @@
+{
+  "name": "artschwelle",
+  "title": "Kontrollversuch: Wie stark hängt die Artenzahl von der Artdefinition ab?",
+  "hypothesis": "Die Artschwelle ist eine reine Beobachtungsgröße. Sie verändert die Dynamik nicht, die genetische und die evolvierte Vielfalt müssen also auf allen Stufen exakt gleich sein, während die gezählte Artenzahl mit der Schwelle fällt.",
+  "background": "Dieser Versuch prüft die Messung, nicht die Ökologie. Er zeigt, warum die Hauptversuche die genetische Vielfalt als primäre Messgröße verwenden und die Artenzahl nur ergänzend.",
+  "days": 60,
+  "measureFrom": 40,
+  "replicates": 6,
+  "seedBase": 4000,
+  "base": {
+    "immigrationUntil": 10
+  },
+  "factor": {
+    "param": "speciation",
+    "levels": [
+      2.0,
+      2.5,
+      3.0,
+      3.5
+    ],
+    "labels": [
+      "2,0",
+      "2,5",
+      "3,0",
+      "3,5"
+    ]
+  },
+  "primary": "richness",
+  "responses": [
+    "richness",
+    "effSpecies",
+    "evolvedDiv",
+    "geneticDiv",
+    "pop"
+  ]
+}

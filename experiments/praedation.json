@@ -1,0 +1,35 @@
+{
+  "name": "praedation",
+  "title": "Erhöhen Räuber die Vielfalt?",
+  "hypothesis": "Wenn Angriffe möglich sind, ist die evolvierte Vielfalt (Erbgut-Abstände innerhalb einer Gründerlinie) der Gemeinschaft höher als ohne Angriffe (Schlüsselräuber-Hypothese nach Paine 1966: Räuber halten dominante Konkurrenten kurz und schaffen so Platz für andere).",
+  "background": "Der Faktor schaltet nur die Wirkung des Angriffsausgangs ab. Gehirne, Kosten und alles andere bleiben gleich. Nach Tag 10 wandert niemand mehr ein; die Gemeinschaft entwickelt sich danach als geschlossenes System.",
+  "days": 60,
+  "measureFrom": 40,
+  "replicates": 12,
+  "seedBase": 1000,
+  "base": {
+    "immigrationUntil": 10
+  },
+  "factor": {
+    "param": "predation",
+    "levels": [
+      false,
+      true
+    ],
+    "labels": [
+      "ohne Räuber",
+      "mit Räubern"
+    ]
+  },
+  "primary": "evolvedDiv",
+  "responses": [
+    "evolvedDiv",
+    "geneticDiv",
+    "lineages",
+    "richness",
+    "effSpecies",
+    "pop",
+    "sizeMean",
+    "algae"
+  ]
+}

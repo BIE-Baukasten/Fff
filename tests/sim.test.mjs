@@ -179,3 +179,47 @@ test('Eingriffe wirken und stehen in der Chronik', () => {
   assert.equal(w.events.filter((e) => String(e.parts[0]).startsWith('Eingriff')).length, 3);
   assert.throws(() => w.intervene('meteor'));
 });
+
+function trajectory(params, days = 6, seed = 31) {
+  const w = new World(seed, { params });
+  for (let i = 0; i < DAY * days; i++) w.step();
+  return { w, fp: fingerprint(w) };
+}
+
+test('Beobachtung verändert die Dynamik nicht: Artschwelle und Namen sind rein beschreibend', () => {
+  const a = trajectory({ speciation: 1.8, establishAt: 5 });
+  const b = trajectory({ speciation: 3.5, establishAt: 20 });
+  assert.equal(a.fp, b.fp);
+  assert.equal(a.w.counters.births, b.w.counters.births);
+  // Die Zählung der Arten hängt dagegen sehr wohl von der Schwelle ab.
+  assert.ok(a.w.clades.size >= b.w.clades.size);
+});
+
+test('Parameter: Räuber, Einwanderung und Störung lassen sich schalten', () => {
+  const noPred = trajectory({ predation: false }).w;
+  assert.equal(noPred.counters.eaten, 0);
+  assert.ok(noPred.creatures.every((c) => !c.attacking));
+
+  const noImm = trajectory({ immigration: false, minPopulation: 1000 }).w;
+  assert.equal(noImm.counters.immigrants, 0);
+
+  const storm = trajectory({ disturbEvery: 2, disturbStrength: 0.5 }).w;
+  assert.ok(storm.counters.disturbed > 0);
+  assert.throws(() => new World(1, { params: { gibtsNicht: 1 } }), /Unbekannter Parameter/);
+});
+
+test('Messwerte sind vollständig und plausibel', async () => {
+  const { measure, METRIC_KEYS, toCsv } = await import('../src/metrics.js');
+  const { w } = trajectory({}, 4);
+  const m = measure(w);
+  for (const k of METRIC_KEYS) assert.ok(Number.isFinite(m[k]), k);
+  assert.equal(m.pop, w.creatures.length);
+  assert.ok(m.simpson >= 0 && m.simpson < 1);
+  assert.ok(m.effSpecies >= 1 - 1e-9 && m.effSpecies <= m.richness + 1e-9);
+  assert.ok(m.geneticDiv > 0 && m.evolvedDiv > 0 && m.evolvedDiv <= m.geneticDiv * 1.5);
+  assert.ok(m.lineages >= 1 && m.lineages <= m.richness);
+  assert.ok(m.attackShare >= 0 && m.attackShare <= 1);
+  const csv = toCsv([m], { seed: 31 });
+  assert.equal(csv.split('\n')[0].split(',').length, METRIC_KEYS.length + 1);
+  assert.ok(w.history.at(-1).m.pop >= 0);
+});

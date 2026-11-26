@@ -63,20 +63,21 @@ export function cloneGenome(g) {
   return { hue: g.hue, size: g.size, sense: g.sense, mut: g.mut, freq: g.freq, w: Float32Array.from(g.w) };
 }
 
-export function mutateGenome(g, rng) {
+// scale vervielfacht Mutationswahrscheinlichkeit und Schrittweiten (Versuchsparameter, Standard 1).
+export function mutateGenome(g, rng, scale = 1) {
   const c = cloneGenome(g);
-  const p = c.mut;
+  const p = Math.min(1, c.mut * scale);
   for (let i = 0; i < N_WEIGHTS; i++) {
     if (rng.next() < p) {
       // Meist kleine Schritte, selten ein großer Sprung.
-      c.w[i] += rng.next() < 0.08 ? rng.gauss() * 1.2 : rng.gauss() * 0.25;
+      c.w[i] += (rng.next() < 0.08 ? rng.gauss() * 1.2 : rng.gauss() * 0.25) * scale;
       c.w[i] = clamp(c.w[i], -4, 4);
     }
   }
-  c.hue = wrapHue(c.hue + rng.gauss() * 2.5);
-  if (rng.next() < 0.6) c.size = clamp(c.size + rng.gauss() * 0.35, ...LIMITS.size);
-  if (rng.next() < 0.6) c.sense = clamp(c.sense + rng.gauss() * 4, ...LIMITS.sense);
-  if (rng.next() < 0.4) c.freq = clamp(c.freq * dexp(rng.gauss() * 0.15), ...LIMITS.freq);
+  c.hue = wrapHue(c.hue + rng.gauss() * 2.5 * scale);
+  if (rng.next() < 0.6) c.size = clamp(c.size + rng.gauss() * 0.35 * scale, ...LIMITS.size);
+  if (rng.next() < 0.6) c.sense = clamp(c.sense + rng.gauss() * 4 * scale, ...LIMITS.sense);
+  if (rng.next() < 0.4) c.freq = clamp(c.freq * dexp(rng.gauss() * 0.15 * scale), ...LIMITS.freq);
   c.mut = clamp(c.mut * dexp(rng.gauss() * 0.08), ...LIMITS.mut);
   return c;
 }

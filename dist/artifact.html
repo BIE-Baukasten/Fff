@@ -660,20 +660,21 @@ function cloneGenome(g) {
   return { hue: g.hue, size: g.size, sense: g.sense, mut: g.mut, freq: g.freq, w: Float32Array.from(g.w) };
 }
 
-function mutateGenome(g, rng) {
+// scale vervielfacht Mutationswahrscheinlichkeit und Schrittweiten (Versuchsparameter, Standard 1).
+function mutateGenome(g, rng, scale = 1) {
   const c = cloneGenome(g);
-  const p = c.mut;
+  const p = Math.min(1, c.mut * scale);
   for (let i = 0; i < N_WEIGHTS; i++) {
     if (rng.next() < p) {
       // Meist kleine Schritte, selten ein großer Sprung.
-      c.w[i] += rng.next() < 0.08 ? rng.gauss() * 1.2 : rng.gauss() * 0.25;
+      c.w[i] += (rng.next() < 0.08 ? rng.gauss() * 1.2 : rng.gauss() * 0.25) * scale;
       c.w[i] = clamp(c.w[i], -4, 4);
     }
   }
-  c.hue = wrapHue(c.hue + rng.gauss() * 2.5);
-  if (rng.next() < 0.6) c.size = clamp(c.size + rng.gauss() * 0.35, ...LIMITS.size);
-  if (rng.next() < 0.6) c.sense = clamp(c.sense + rng.gauss() * 4, ...LIMITS.sense);
-  if (rng.next() < 0.4) c.freq = clamp(c.freq * dexp(rng.gauss() * 0.15), ...LIMITS.freq);
+  c.hue = wrapHue(c.hue + rng.gauss() * 2.5 * scale);
+  if (rng.next() < 0.6) c.size = clamp(c.size + rng.gauss() * 0.35 * scale, ...LIMITS.size);
+  if (rng.next() < 0.6) c.sense = clamp(c.sense + rng.gauss() * 4 * scale, ...LIMITS.sense);
+  if (rng.next() < 0.4) c.freq = clamp(c.freq * dexp(rng.gauss() * 0.15 * scale), ...LIMITS.freq);
   c.mut = clamp(c.mut * dexp(rng.gauss() * 0.08), ...LIMITS.mut);
   return c;
 }
@@ -811,6 +812,171 @@ function makeEpithet(rng, traits, genus, taken) {
 return { makeGenus, makeEpithet };
 })();
 
+// ── src/metrics.js ──
+__mod["src/metrics.js"] = (() => {
+// Messgrößen einer Welt zu einem Zeitpunkt. Reine Beobachtung: nichts hier verändert die Welt
+// oder verbraucht ihren Zufall. Gerechnet wird mit detmath, damit auch die Messreihen
+// in jeder Engine bitgenau gleich ausfallen.
+
+const { dexp, dlog } = __mod["src/detmath.js"];
+const { genomeDistance } = __mod["src/genome.js"];
+// Reihenfolge und Bedeutung der Spalten in jeder Messreihe (CSV).
+const METRICS = [
+  ['day', 'Tag', 'Zeit in Tagen seit Beginn'],
+  ['pop', 'Tiere', 'Anzahl lebender Tiere'],
+  ['richness', 'Artenzahl', 'lebende benannte Arten (hängt von der Artschwelle ab)'],
+  ['shannon', 'Shannon H′', 'Shannon-Index über die Arten, natürlicher Logarithmus'],
+  ['effSpecies', 'effektive Arten', 'exp(H′): Zahl gleich häufiger Arten mit derselben Vielfalt'],
+  ['simpson', 'Simpson 1−D', 'Wahrscheinlichkeit, dass zwei zufällige Tiere verschiedenen Arten angehören'],
+  ['geneticDiv', 'genetische Vielfalt', 'mittlerer Erbgut-Abstand zweier Tiere; unabhängig von der Artdefinition'],
+  ['evolvedDiv', 'evolvierte Vielfalt', 'mittlerer Erbgut-Abstand zweier Tiere derselben Gründerlinie: im Becken entstandene Vielfalt'],
+  ['lineages', 'Gründerlinien', 'Zahl der überlebenden Gründerlinien (eingewanderte Arten samt Nachfahren)'],
+  ['sizeMean', 'Größe ⌀', 'mittlere Körpergröße'],
+  ['sizeSd', 'Größe σ', 'Standardabweichung der Körpergröße'],
+  ['senseMean', 'Sicht ⌀', 'mittlere Sichtweite'],
+  ['mutMean', 'Mutationsrate ⌀', 'mittlere (selbst evolvierende) Mutationsrate'],
+  ['speedMean', 'Schub ⌀', 'mittlerer Schub (gleitender Mittelwert je Tier, 0…1)'],
+  ['attackShare', 'Angriffslust', 'Anteil der Tiere, deren Angriffsausgang gerade aktiv ist'],
+  ['hunterShare', 'Jägeranteil', 'Anteil der Tiere, die schon mindestens ein Tier erbeutet haben'],
+  ['genMean', 'Generation ⌀', 'mittlere Generation der lebenden Tiere'],
+  ['genMax', 'Generation max', 'höchste Generation unter den lebenden Tieren'],
+  ['algae', 'Algen ⌀', 'mittlere Algendichte je Zelle (1 = gesättigt)'],
+  ['births', 'Geburten Σ', 'Geburten seit Beginn'],
+  ['deathsHunger', 'verhungert Σ', 'verhungerte Tiere seit Beginn'],
+  ['deathsAge', 'Altersschwäche Σ', 'an Altersschwäche gestorbene Tiere seit Beginn'],
+  ['deathsEaten', 'gefressen Σ', 'gefressene Tiere seit Beginn'],
+  ['deathsDisturbed', 'Störung Σ', 'durch Störungen gestorbene Tiere seit Beginn'],
+  ['immigrants', 'Einwanderer Σ', 'eingewanderte Tiere seit Beginn (ohne Gründer)'],
+  ['speciations', 'Artbildungen Σ', 'neu benannte Arten seit Beginn'],
+  ['extinctions', 'Aussterben Σ', 'ausgestorbene benannte Arten seit Beginn'],
+];
+
+const METRIC_KEYS = METRICS.map((m) => m[0]);
+
+const GENETIC_SAMPLE = 60;
+
+function measure(w) {
+  const cs = w.creatures;
+  const n = cs.length;
+  const out = Object.fromEntries(METRIC_KEYS.map((k) => [k, 0]));
+  out.day = w.t / 600;
+  out.pop = n;
+
+  const counts = new Map();
+  const roots = new Set();
+  let size = 0;
+  let size2 = 0;
+  let sense = 0;
+  let mut = 0;
+  let speed = 0;
+  let attack = 0;
+  let hunters = 0;
+  let gen = 0;
+  let genMax = 0;
+  for (const c of cs) {
+    const d = w.displayClade(c.clade);
+    const id = d ? d.id : 0;
+    counts.set(id, (counts.get(id) || 0) + 1);
+    roots.add(rootOf(w, c));
+    size += c.g.size;
+    size2 += c.g.size * c.g.size;
+    sense += c.g.sense;
+    mut += c.g.mut;
+    speed += c.speedAvg;
+    if (c.attacking) attack++;
+    if (c.kills > 0) hunters++;
+    gen += c.gen;
+    if (c.gen > genMax) genMax = c.gen;
+  }
+
+  if (n > 0) {
+    out.richness = counts.size;
+    let H = 0;
+    let D = 0;
+    for (const k of counts.values()) {
+      const p = k / n;
+      H -= p * dlog(p);
+      D += p * p;
+    }
+    out.shannon = H;
+    out.effSpecies = dexp(H);
+    out.simpson = 1 - D;
+    out.sizeMean = size / n;
+    out.sizeSd = Math.sqrt(Math.max(0, size2 / n - out.sizeMean * out.sizeMean));
+    out.senseMean = sense / n;
+    out.mutMean = mut / n;
+    out.speedMean = speed / n;
+    out.attackShare = attack / n;
+    out.hunterShare = hunters / n;
+    out.genMean = gen / n;
+    out.genMax = genMax;
+    const gd = geneticDiversity(cs, (c) => rootOf(w, c));
+    out.geneticDiv = gd.all;
+    out.evolvedDiv = gd.within;
+    out.lineages = roots.size;
+  }
+
+  let a = 0;
+  for (let i = 0; i < w.algae.length; i++) a += w.algae[i];
+  out.algae = a / w.algae.length;
+
+  const k = w.counters;
+  out.births = k.births;
+  out.deathsHunger = k.hunger;
+  out.deathsAge = k.age;
+  out.deathsEaten = k.eaten;
+  out.deathsDisturbed = k.disturbed;
+  out.immigrants = k.immigrants;
+  out.speciations = k.speciations;
+  out.extinctions = k.extinctions;
+  return out;
+}
+
+function rootOf(w, c) {
+  return w.clades.get(c.clade)?.root ?? 0;
+}
+
+// Mittlerer paarweiser Erbgut-Abstand über eine gleichmäßig verteilte Stichprobe
+// (jedes k-te Tier, ohne Zufall): über alle Paare und nur über Paare derselben Gründerlinie.
+function geneticDiversity(cs, lineageOf = () => 0) {
+  const n = cs.length;
+  if (n < 2) return { all: 0, within: 0 };
+  const stride = Math.max(1, Math.ceil(n / GENETIC_SAMPLE));
+  const sample = [];
+  for (let i = 0; i < n; i += stride) sample.push({ g: cs[i].g, root: lineageOf(cs[i]) });
+  let sum = 0;
+  let pairs = 0;
+  let wSum = 0;
+  let wPairs = 0;
+  for (let i = 0; i < sample.length; i++) {
+    for (let j = i + 1; j < sample.length; j++) {
+      const d = genomeDistance(sample[i].g, sample[j].g);
+      sum += d;
+      pairs++;
+      if (sample[i].root === sample[j].root) {
+        wSum += d;
+        wPairs++;
+      }
+    }
+  }
+  return { all: pairs ? sum / pairs : 0, within: wPairs ? wSum / wPairs : 0 };
+}
+
+function toCsv(rows, extra = {}) {
+  const extraKeys = Object.keys(extra);
+  const head = [...extraKeys, ...METRIC_KEYS].join(',');
+  const lines = rows.map((r) => [...extraKeys.map((k) => extra[k]), ...METRIC_KEYS.map((k) => fmt(r[k]))].join(','));
+  return [head, ...lines].join('\n') + '\n';
+}
+
+function fmt(v) {
+  if (typeof v !== 'number') return String(v);
+  if (Number.isInteger(v)) return String(v);
+  return v.toPrecision(6);
+}
+return { METRICS, METRIC_KEYS, measure, geneticDiversity, toCsv };
+})();
+
 // ── src/world.js ──
 __mod["src/world.js"] = (() => {
 // Die Welt: ein toroidales Becken, Algen, wanderndes Licht, und die Wesen darin.
@@ -821,6 +987,7 @@ const { createRng } = __mod["src/rng.js"];
 const { N_IN, N_HID, N_OUT, randomGenome, mutateGenome, cloneGenome, genomeDistance, hueDistance, wrapHue } = __mod["src/genome.js"];
 const { think } = __mod["src/brain.js"];
 const { makeGenus, makeEpithet } = __mod["src/names.js"];
+const { measure } = __mod["src/metrics.js"];
 const DAY = 600; // Ticks pro Tag
 const WORLD_W = 1600;
 const WORLD_H = 1000;
@@ -834,9 +1001,13 @@ const TAU = Math.PI * 2;
 const COS7 = dcos(0.7);
 const SIN7 = dsin(0.7);
 
-const PARAMS = {
+// Standardwerte aller Modellparameter. Jede Welt bekommt eine eigene Kopie (world.p),
+// einzelne Werte lassen sich beim Erzeugen überschreiben: new World(saat, { params: {...} }).
+const PARAMS = Object.freeze({
+  // Umwelt
   algaeGrowth: 0.0065,
   algaeEnergy: 60,
+  // Stoffwechsel und Verhalten
   basal: 0.0042,
   moveCost: 0.006,
   senseCost: 0.0015,
@@ -847,10 +1018,21 @@ const PARAMS = {
   biteEfficiency: 0.75,
   reproduceAt: 0.7,
   maturity: 160,
+  mutationScale: 1, // Faktor auf Mutationswahrscheinlichkeit und -schrittweite
+  predation: true, // false: der Angriffsausgang bleibt wirkungslos
+  // Einwanderung: fällt der Bestand unter minPopulation, treiben 10 neue Tiere heran
+  immigration: true,
+  immigrationUntil: null, // Tag, ab dem niemand mehr einwandert (null = nie Schluss)
+  minPopulation: 14,
+  founderScreening: true, // Gründer aus 12 Zufallsgenomen vorauswählen (sonst rein zufällig)
+  // Störung: alle disturbEvery Tage (0 = nie) stirbt ein Anteil disturbStrength zufällig gewählter Tiere
+  disturbEvery: 0,
+  disturbStrength: 0.5,
+  disturbFrom: 0, // erster Tag, an dem Störungen auftreten dürfen
+  // Beobachtung (verändert die Dynamik nicht): Schwelle für Artbildung, Mindestgröße für einen Namen
   speciation: 2.5,
   establishAt: 10,
-  minPopulation: 14,
-};
+});
 
 function wrapCoord(v, size) {
   if (v < 0) return v + size;
@@ -875,9 +1057,16 @@ function clamp(v, lo, hi) {
 }
 
 class World {
-  constructor(seed) {
+  constructor(seed, options = {}) {
     this.seed = seed >>> 0;
+    for (const k of Object.keys(options.params || {})) if (!(k in PARAMS)) throw new Error(`Unbekannter Parameter: ${k}`);
+    this.p = { ...PARAMS, ...(options.params || {}) };
     this.rng = createRng(this.seed);
+    // Ein eigener Zufallsstrom für Namen und Farben: Kosmetik darf die Dynamik nicht berühren.
+    this.cosmeticRng = createRng((this.seed ^ 0x9e3779b9) >>> 0);
+    this.historyLimit = options.historyLimit ?? 720;
+    // Zähler seit Weltbeginn, für Raten zwischen zwei Messungen.
+    this.counters = { births: 0, hunger: 0, age: 0, eaten: 0, disturbed: 0, immigrants: 0, immigrations: 0, speciations: 0, extinctions: 0 };
     this.t = 0;
     this.algae = new Float32Array(COLS * ROWS);
     this.light = new Float32Array(COLS * ROWS);
@@ -890,7 +1079,7 @@ class World {
     this.speciesNames = new Set();
     this.events = [];
     this.history = [];
-    this.sampleEvery = 30;
+    this.sampleEvery = options.sampleEvery ?? 30;
     this.records = { oldestDays: 5, maxPop: 0, loggedPop: 0, lastPopLog: -Infinity, maxGen: 0, nextGen: 10, firstKill: false, lastCrash: -Infinity };
     this.births = 0;
     this.deaths = { hunger: 0, age: 0, eaten: 0 };
@@ -991,7 +1180,7 @@ class World {
   }
 
   growAlgae(day) {
-    const g = PARAMS.algaeGrowth * day * (this.murk() ? 0.12 : 1);
+    const g = this.p.algaeGrowth * day * (this.murk() ? 0.12 : 1);
     const a = this.algae;
     const L = this.light;
     for (let i = 0; i < a.length; i++) {
@@ -1018,7 +1207,7 @@ class World {
 
   // ---------- Arten ----------
 
-  newClade({ genus, parent, founder, depth }) {
+  newClade({ genus, parent, founder, depth, hue }) {
     const clade = {
       id: this.nextCladeId++,
       genus,
@@ -1026,7 +1215,7 @@ class World {
       name: null,
       parent,
       founder: cloneGenome(founder),
-      hue: founder.hue,
+      hue, // nur Anzeigefarbe; der Farbton im Erbgut bleibt unberührt
       born: this.t,
       established: false,
       establishedAt: null,
@@ -1036,7 +1225,9 @@ class World {
       kills: 0,
       depth,
       childClades: 0,
+      root: null, // Gründerlinie: die eingewanderte Art am Anfang dieser Abstammung
     };
+    clade.root = parent ? this.clades.get(parent).root : clade.id;
     this.clades.set(clade.id, clade);
     if (parent) this.clades.get(parent).childClades++;
     return clade;
@@ -1060,7 +1251,7 @@ class World {
       traits.size = clade.founder.size;
       traits.sense = clade.founder.sense;
     }
-    clade.epithet = makeEpithet(this.rng, traits, clade.genus, this.speciesNames);
+    clade.epithet = makeEpithet(this.cosmeticRng, traits, clade.genus, this.speciesNames);
     clade.name = `${clade.genus} ${clade.epithet}`;
     this.speciesNames.add(clade.name);
     clade.established = true;
@@ -1086,20 +1277,24 @@ class World {
 
   immigrate(count, announce = true) {
     const rng = this.rng;
-    const founder = this.pickDrifter();
-    const genus = makeGenus(rng, this.genusNames);
+    const founder = this.p.founderScreening ? this.pickDrifter() : randomGenome(rng);
+    const genus = makeGenus(this.cosmeticRng, this.genusNames);
     this.genusNames.add(genus);
-    const clade = this.newClade({ genus, parent: null, founder, depth: 0 });
+    const clade = this.newClade({ genus, parent: null, founder, depth: 0, hue: founder.hue });
     const x0 = rng.range(0, WORLD_W);
     const y0 = rng.range(0, WORLD_H);
     for (let i = 0; i < count; i++) {
-      const g = i === 0 ? cloneGenome(founder) : mutateGenome(founder, rng);
+      const g = i === 0 ? cloneGenome(founder) : mutateGenome(founder, rng, this.p.mutationScale);
       const x = wrapCoord(x0 + rng.gauss() * 90, WORLD_W);
       const y = wrapCoord(y0 + rng.gauss() * 90, WORLD_H);
       this.spawn(g, x, y, clade.id, 0, null, 0.5 * 12 * g.size * g.size);
     }
     this.establish(clade);
     this.lastImmigration = this.t;
+    if (announce) {
+      this.counters.immigrations++;
+      this.counters.immigrants += count;
+    }
     if (announce) this.log('Einwanderer treiben heran: ', { clade: clade.id }, ' gründet eine neue Gattung.');
     return clade.id;
   }
@@ -1175,6 +1370,8 @@ class World {
       killer: null,
       died: null,
       lastChild: null,
+      // Anzeigefarbe: Farbe der Linie plus die eigene kleine Abweichung vom Gründer.
+      hue: 0,
       input: new Float32Array(N_IN),
       hidden: new Float32Array(N_HID),
       output: new Float32Array(N_OUT),
@@ -1183,6 +1380,7 @@ class World {
     this._newborn.push(c);
     this.byId.set(c.id, c);
     const clade = this.clades.get(cladeId);
+    c.hue = wrapHue(clade.hue + (((g.hue - clade.founder.hue + 540) % 360) - 180));
     clade.pop++;
     if (clade.pop > clade.peak) clade.peak = clade.pop;
     return c;
@@ -1267,14 +1465,14 @@ class World {
     c.turn = out[0] * 0.22;
     const half = (out[1] + 1) / 2;
     c.thrust = half * Math.sqrt(half); // ^1.5, ohne Math.pow: das rechnet nicht in jeder Engine gleich
-    c.attacking = out[2] > 0.5;
+    c.attacking = this.p.predation && out[2] > 0.5;
     c.mem0 = out[3];
     c.mem1 = out[4];
     c.speedAvg += (c.thrust - c.speedAvg) * 0.01;
     c.turnAvg += (Math.abs(out[0]) - c.turnAvg) * 0.01;
 
     c.a = wrapAngle(c.a + c.turn);
-    const speed = c.thrust * PARAMS.maxSpeed * c.speedF;
+    const speed = c.thrust * this.p.maxSpeed * c.speedF;
     c.ca = dcos(c.a);
     c.sa = dsin(c.a);
     c.x = wrapCoord(c.x + c.ca * speed, WORLD_W);
@@ -1282,23 +1480,23 @@ class World {
 
     // Grasen: wer stillhält, frisst gründlicher.
     const ci = this.cellIndex(c.x, c.y);
-    const bite = Math.min(this.algae[ci], this.algae[ci] * PARAMS.eatRate * 6 * c.eatF * (1 - 0.6 * c.thrust) * 1.6);
+    const bite = Math.min(this.algae[ci], this.algae[ci] * this.p.eatRate * 6 * c.eatF * (1 - 0.6 * c.thrust) * 1.6);
     this.algae[ci] -= bite;
-    c.energy += bite * PARAMS.algaeEnergy;
+    c.energy += bite * this.p.algaeEnergy;
 
     let cost =
-      PARAMS.basal * m +
-      PARAMS.moveCost * m * c.thrust * c.thrust +
-      PARAMS.senseCost * g.sense;
+      this.p.basal * m +
+      this.p.moveCost * m * c.thrust * c.thrust +
+      this.p.senseCost * g.sense;
     if (c.age > 0.8 * c.maxAge) cost *= 1 + ((c.age - 0.8 * c.maxAge) / (0.2 * c.maxAge)) * 2;
 
     if (c.attacking) {
-      cost += PARAMS.attackCost * m;
+      cost += this.p.attackCost * m;
       if (n && n.d < (s + n.o.g.size) * 1.1 && s > n.o.g.size * 0.75) {
         const prey = n.o;
-        const dmg = Math.min(prey.energy, PARAMS.biteRate * m);
+        const dmg = Math.min(prey.energy, this.p.biteRate * m);
         prey.energy -= dmg;
-        c.energy += dmg * PARAMS.biteEfficiency;
+        c.energy += dmg * this.p.biteEfficiency;
         prey.hurt = 10;
         c.bite = 6;
         if (prey.energy <= 0 && prey.alive) this.kill(prey, c);
@@ -1313,25 +1511,27 @@ class World {
 
     if (c.energy <= 0) this.die(c, 'hunger');
     else if (c.age > c.maxAge) this.die(c, 'age');
-    else if (c.energy > PARAMS.reproduceAt * c.maxE && c.age > PARAMS.maturity) this.reproduce(c);
+    else if (c.energy > this.p.reproduceAt * c.maxE && c.age > this.p.maturity) this.reproduce(c);
   }
 
   reproduce(c) {
     const rng = this.rng;
-    const childG = mutateGenome(c.g, rng);
+    const childG = mutateGenome(c.g, rng, this.p.mutationScale);
     let cladeId = c.clade;
     const clade = this.clades.get(c.clade);
-    if (genomeDistance(childG, clade.founder) > PARAMS.speciation) {
-      // Abspaltung: die Färbung springt sichtbar, damit man den neuen Zweig erkennt.
-      childG.hue = wrapHue(childG.hue + (rng.chance(0.5) ? 1 : -1) * rng.range(35, 70));
+    if (genomeDistance(childG, clade.founder) > this.p.speciation) {
+      // Abspaltung. Nur die Anzeigefarbe der neuen Linie springt, damit man den Zweig sieht;
+      // das Erbgut bleibt, wie die Mutation es gemacht hat.
+      const cr = this.cosmeticRng;
+      const hue = wrapHue(clade.hue + (cr.chance(0.5) ? 1 : -1) * cr.range(35, 70));
       let genus = clade.genus;
       let depth = clade.depth + 1;
       if (depth >= 4) {
-        genus = makeGenus(rng, this.genusNames);
+        genus = makeGenus(cr, this.genusNames);
         this.genusNames.add(genus);
         depth = 0;
       }
-      cladeId = this.newClade({ genus, parent: clade.id, founder: childG, depth }).id;
+      cladeId = this.newClade({ genus, parent: clade.id, founder: childG, depth, hue }).id;
     }
     const childEnergy = c.energy * 0.4;
     c.energy *= 0.5;
@@ -1348,10 +1548,12 @@ class World {
     c.children++;
     c.lastChild = child.id;
     this.births++;
+    this.counters.births++;
 
     const childClade = this.clades.get(cladeId);
-    if (!childClade.established && childClade.pop >= PARAMS.establishAt) {
+    if (!childClade.established && childClade.pop >= this.p.establishAt) {
       this.establish(childClade);
+      this.counters.speciations++;
       const ancestor = this.displayClade(childClade.parent);
       this.log('Neue Art: ', { clade: childClade.id }, ' hat sich von ', ancestor ? { clade: ancestor.id } : 'unbekannten Vorfahren', ' abgespalten.');
     }
@@ -1383,15 +1585,20 @@ class World {
     c.cause = cause;
     c.killer = killer ? killer.id : null;
     c.died = this.t;
-    this.deaths[cause]++;
+    if (cause === 'disturbed') this.counters.disturbed++;
+    else {
+      this.deaths[cause]++;
+      this.counters[cause]++;
+    }
     const m = c.g.size * c.g.size;
-    const remains = m * 0.02 + Math.max(0, c.energy) / PARAMS.algaeEnergy * 0.5;
+    const remains = m * 0.02 + Math.max(0, c.energy) / this.p.algaeEnergy * 0.5;
     if (cause !== 'eaten') this.addAlgae(c.x, c.y, remains, 1);
     const clade = this.clades.get(c.clade);
     clade.pop--;
     if (clade.pop === 0) {
       clade.died = this.t;
       if (clade.established) {
+        this.counters.extinctions++;
         const days = Math.max(1, Math.round((this.t - clade.born) / DAY));
         this.log('', { clade: clade.id }, ` ist ausgestorben, nach ${days} ${days === 1 ? 'Tag' : 'Tagen'} und mit höchstens ${clade.peak} Tieren.`);
       } else {
@@ -1424,7 +1631,13 @@ class World {
     list.length = w;
     this.flushNewborn();
 
-    if (list.length < PARAMS.minPopulation && this.t - this.lastImmigration > 240) {
+    const p = this.p;
+    if (p.disturbEvery > 0 && this.t >= p.disturbFrom * DAY && (this.t - p.disturbFrom * DAY) % Math.round(p.disturbEvery * DAY) === 0) {
+      this.disturb(p.disturbStrength);
+    }
+
+    const open = p.immigration && (p.immigrationUntil === null || this.t < p.immigrationUntil * DAY);
+    if (open && this.creatures.length < p.minPopulation && this.t - this.lastImmigration > 240) {
       this.immigrate(10);
       this.flushNewborn();
     }
@@ -1451,8 +1664,8 @@ class World {
       const clade = this.clades.get(id);
       if (clade && n > clade.peak) clade.peak = n;
     }
-    this.history.push({ t: this.t, pop: this.creatures.length, algae: sum / this.algae.length, counts });
-    if (this.history.length > 720) {
+    this.history.push({ t: this.t, pop: this.creatures.length, algae: sum / this.algae.length, counts, m: measure(this) });
+    if (this.history.length > this.historyLimit) {
       this.history = this.history.filter((_, i) => i % 2 === 0);
       this.sampleEvery *= 2;
     }
@@ -1492,6 +1705,23 @@ class World {
 
   // ---------- Eingriffe von außen ----------
 
+  // Dichteunabhängige Sterblichkeit: jedes Tier stirbt mit Wahrscheinlichkeit `strength`.
+  disturb(strength, announce = false) {
+    let n = 0;
+    for (const c of this.creatures) {
+      if (c.alive && this.rng.next() < strength) {
+        this.die(c, 'disturbed');
+        n++;
+      }
+    }
+    this.creatures = this.creatures.filter((c) => {
+      if (!c.alive) this.byId.delete(c.id);
+      return c.alive;
+    });
+    if (announce) this.log(`Eingriff: Ein Sturm reißt ${n} Tiere aus dem Becken.`);
+    return n;
+  }
+
   intervene(kind) {
     if (kind === 'bloom') {
       for (let i = 0; i < this.algae.length; i++) this.algae[i] = Math.max(this.algae[i], 0.7 + 0.6 * this.light[i]);
@@ -1499,6 +1729,8 @@ class World {
     } else if (kind === 'murk') {
       this.murkUntil = this.t + DAY;
       this.log('Eingriff: Trübes Wasser schluckt einen Tag lang fast alles Licht.');
+    } else if (kind === 'storm') {
+      this.disturb(0.5, true);
     } else if (kind === 'current') {
       for (const c of this.creatures) {
         c.x = wrapCoord(((c.x + this.rng.gauss() * 320) % WORLD_W + WORLD_W) % WORLD_W, WORLD_W);
