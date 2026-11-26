@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" width="560" height="300" font-family="system-ui, sans-serif" font-size="12">
+<rect width="560" height="300" fill="#ffffff"/>
+<text x="64" y="22" font-size="14" font-weight="600" fill="#1d2330">Tiere</text>
+<text x="540" y="22" text-anchor="end" fill="#555c6b">Δ = -317,89, p = &lt; 0,001</text>
+<line x1="64" x2="540" y1="183.7" y2="183.7" stroke="#e3e6ec"/>
+<text x="56" y="187.7" text-anchor="end" fill="#555c6b">500</text>
+<line x1="64" x2="540" y1="101.2" y2="101.2" stroke="#e3e6ec"/>
+<text x="56" y="105.2" text-anchor="end" fill="#555c6b">1000</text>
+<polyline points="183.0,99.7 421.0,202.1" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,109.2 421.0,114.2" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,219.7 421.0,186.3" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,95.6 421.0,173.2" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,93.6 421.0,203.8" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,70.6 421.0,197.2" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,123.5 421.0,208.7" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,130.7 421.0,135.3" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,54.8 421.0,192.9" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,104.7 421.0,141.3" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,86.2 421.0,173.6" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,150.3 421.0,187.7" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,188.9 421.0,227.4" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,155.8 421.0,126.3" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,190.6 421.0,218.2" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,153.0 421.0,239.2" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,87.0 421.0,164.0" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,105.5 421.0,128.9" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,109.5 421.0,193.8" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,114.9 421.0,201.5" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,194.6 421.0,189.1" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,129.2 421.0,195.2" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,111.4 421.0,104.4" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<polyline points="183.0,124.3 421.0,158.0" fill="none" stroke="#9aa3b5" stroke-opacity="0.35"/>
+<circle cx="177.0" cy="99.7" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="180.0" cy="109.2" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="183.0" cy="219.7" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="186.0" cy="95.6" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="189.0" cy="93.6" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="177.0" cy="70.6" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="180.0" cy="123.5" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="183.0" cy="130.7" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="186.0" cy="54.8" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="189.0" cy="104.7" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="177.0" cy="86.2" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="180.0" cy="150.3" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="183.0" cy="188.9" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="186.0" cy="155.8" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="189.0" cy="190.6" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="177.0" cy="153.0" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="180.0" cy="87.0" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="183.0" cy="105.5" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="186.0" cy="109.5" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="189.0" cy="114.9" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="177.0" cy="194.6" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="180.0" cy="129.2" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="183.0" cy="111.4" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<circle cx="186.0" cy="124.3" r="3" fill="#3b6fb6" fill-opacity="0.45"/>
+<line x1="183" x2="183" y1="141.7" y2="109.7" stroke="#1d2330" stroke-width="2"/>
+<rect x="169" y="123.1" width="28" height="4" fill="#1d2330"/>
+<text x="183" y="274" text-anchor="middle" fill="#1d2330">ohne Räuber</text>
+<circle cx="415.0" cy="202.1" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="418.0" cy="114.2" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="421.0" cy="186.3" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="424.0" cy="173.2" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="427.0" cy="203.8" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="415.0" cy="197.2" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="418.0" cy="208.7" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="421.0" cy="135.3" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="424.0" cy="192.9" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="427.0" cy="141.3" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="415.0" cy="173.6" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="418.0" cy="187.7" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="421.0" cy="227.4" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="424.0" cy="126.3" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="427.0" cy="218.2" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="415.0" cy="239.2" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="418.0" cy="164.0" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="421.0" cy="128.9" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="424.0" cy="193.8" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="427.0" cy="201.5" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="415.0" cy="189.1" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="418.0" cy="195.2" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="421.0" cy="104.4" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<circle cx="424.0" cy="158.0" r="3" fill="#d9822b" fill-opacity="0.45"/>
+<line x1="421" x2="421" y1="191.6" y2="163.1" stroke="#1d2330" stroke-width="2"/>
+<rect x="407" y="175.6" width="28" height="4" fill="#1d2330"/>
+<text x="421" y="274" text-anchor="middle" fill="#1d2330">mit Räubern</text>
+<text x="64" y="292" fill="#7b8293" font-size="11">Punkte: einzelne Saaten (Mittel Tag 40–60); Balken: Mittelwert mit 95-%-Intervall</text>
+</svg>

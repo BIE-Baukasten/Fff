@@ -1,6 +1,6 @@
 # Versuche im Gezeitenbecken
 
-Vier Versuche und eine Replikation, alle mit `tools/experiment.mjs` gerechnet
+Vier Versuche und eine Replikation (240 Läufe, je 60 Tage), alle mit `tools/experiment.mjs` gerechnet
 und vollständig reproduzierbar. Die Rohdaten, Diagramme und Einzelberichte
 stehen in `results/<versuch>/`, das Modell ist in [`MODELL.md`](MODELL.md)
 beschrieben.
@@ -38,9 +38,13 @@ keine Belege.
 | Versuch | Hypothese | Ergebnis für die primäre Messgröße |
 | --- | --- | --- |
 | Artschwelle (Kontrolle) | Artenzahl hängt von der Definition ab, Dynamik nicht | bestätigt, exakt |
-| Räuber | Räuber erhöhen die Vielfalt | Tendenz dafür, siehe Replikation |
+| Räuber | Räuber erhöhen die Vielfalt | bestätigt in einer unabhängigen Replikation; kleiner Effekt (+10 %), gepoolt p = 0,007 |
 | Störung | Vielfalt am größten bei mittlerer Störung | nicht bestätigt |
 | Produktivität | Vielfalt am größten bei mittlerer Produktivität | nicht bestätigt; stattdessen steigt sie stetig |
+
+Dazu kommen zwei Befunde, nach denen niemand gefragt hat: Räuber machen ihre
+Beute größer und lassen mehr Algen übrig (eine trophische Kaskade), und
+häufige Störung macht die Tiere kleiner.
 
 Der wichtigste Befund ist methodisch: **Gezählte Arten messen in diesem Modell
 vor allem Bestandsgröße und Generationenumschlag, nicht Vielfalt.** Mehr dazu
@@ -92,7 +96,54 @@ evolvierte Vielfalt. Die beiden Maße zeigen in entgegengesetzte Richtungen
 
 ### 2a. Replikation
 
-<!-- REPLIKATION -->
+Mit 24 *neuen* Saaten (5000 bis 5023). Umfang und Auswertung wurden festgelegt
+und committet, bevor der Lauf startete (Commit `23095e1`).
+
+| 24 Saaten | ohne Räuber | mit Räubern | Differenz [95 %] | p | p (Holm) |
+| --- | --- | --- | --- | --- | --- |
+| **evolvierte Vielfalt** | 2,83 | 3,11 | +0,28 [0,04; 0,53] | 0,043 | 0,14 |
+| Tiere | 855 | 537 | −318 [−430; −207] | < 0,001 | 0,001 |
+| Größe ⌀ | 3,68 | 4,49 | +0,81 [0,44; 1,19] | 0,001 | 0,006 |
+| Algen ⌀ | 0,32 | 0,38 | +0,06 [0,04; 0,08] | < 0,001 | 0,001 |
+
+![Replikation: evolvierte Vielfalt](results/praedation-replikation/evolvedDiv.svg)
+
+**Die Replikation bestätigt die Richtung und die Größe des Effekts** (+0,28
+gegenüber +0,25). Für die vorab benannte primäre Messgröße liegt p unter
+0,05. Holm-korrigiert über alle acht Messgrößen ist er es nicht; das ist die
+strengere Lesart. Beide Versuche gemeinsam ausgewertet (36 Saatenpaare,
+Vorzeichentest auf alle Differenzen):
+
+| 36 Paare | Differenz [95 %] | p | höher mit Räubern |
+| --- | --- | --- | --- |
+| evolvierte Vielfalt | +0,27 [0,09; 0,45] | 0,007 | 26 von 36 |
+| Größe ⌀ | +0,65 [0,35; 0,95] | < 0,001 | 28 von 36 |
+| Algen ⌀ | +0,05 [0,03; 0,07] | < 0,001 | 30 von 36 |
+| Tiere | −268 [−359; −180] | < 0,001 | 6 von 36 |
+
+**Deutung.**
+
+- **Räuber erhöhen die evolvierte Vielfalt.** Der Effekt ist klein (rund
+  +10 %), aber in zwei unabhängigen Versuchen gleich groß.
+- **Räuber machen ihre Beute größer.** Im Modell kann nur angreifen, wer
+  mindestens drei Viertel so groß ist wie die Beute. Größe ist also Schutz,
+  und Räuberdruck selektiert auf Größe.
+- **Mit Räubern bleiben mehr Algen übrig.** Räuber halten die Grasenden kurz,
+  und die Pflanzen profitieren. Das ist das Muster einer *trophischen
+  Kaskade* (Hairston, Smith & Slobodkin 1960; Carpenter et al. 1985). Es ist
+  in keiner Regel des Modells vorgegeben.
+
+Welcher Mechanismus die höhere Vielfalt erzeugt, zeigen die Versuche nicht.
+Infrage kommen zum Beispiel:
+
+- unterschiedliche Selektion auf Größe und Verhalten;
+- kleinere Bestände mit anderer Altersstruktur;
+- dass Räuber dominante Linien bremsen, wie es die Schlüsselräuber-Hypothese
+  annimmt.
+
+Das wäre die nächste Frage.
+
+→ [Bericht](results/praedation-replikation/bericht.md)
 
 ## 3. Störung (Intermediate Disturbance Hypothesis)
 
@@ -196,11 +247,16 @@ gemeinsam mit der Bestandsgröße berichten.
 
 ## Quellen
 
+- Carpenter, S. R., Kitchell, J. F. & Hodgson, J. R. (1985): Cascading trophic
+  interactions and lake productivity. *BioScience* 35, 634–639.
 - Connell, J. H. (1978): Diversity in tropical rain forests and coral reefs.
   *Science* 199, 1302–1310.
 - Gotelli, N. J. & Colwell, R. K. (2001): Quantifying biodiversity: procedures
   and pitfalls in the measurement and comparison of species richness.
   *Ecology Letters* 4, 379–391.
+- Hairston, N. G., Smith, F. E. & Slobodkin, L. B. (1960): Community
+  structure, population control, and competition. *American Naturalist* 94,
+  421–425.
 - MacArthur, R. H. & Wilson, E. O. (1967): *The Theory of Island
   Biogeography.* Princeton University Press.
 - Oksanen, L., Fretwell, S. D., Arruda, J. & Niemelä, P. (1981): Exploitation
